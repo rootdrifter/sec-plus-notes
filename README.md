@@ -1,7 +1,7 @@
 # sec-plus-notes
 
 CompTIA Security+ study notes, organised by knowledge domain. Written as substantive revision
-material and cross-linked to **real implementations** in the rootdrift portfolio — PKI/FIDO2 in
+material and cross-linked to **real implementations** in the rootdrifter portfolio — PKI/FIDO2 in
 [ironveil], the AdGuard/WireGuard network stack, GrapheneOS hardening in [nullbyte], and the
 [spectre] pentest — so the theory is anchored to things actually built and tested rather than
 memorised in the abstract.
