@@ -188,6 +188,18 @@ the human. Underlying **Cialdini principles** (memorise these — the exam tests
 - **Deauthentication / deauth:** 802.11 deauth frames (unencrypted in WPA2) used to kick clients;
   forces reconnect to capture handshakes. Mitigated by **802.11w** (management frame protection).
 
+**Wireless / RF attacks (know all of these — recurring exam items):**
+- **Rogue access point:** an unauthorised AP plugged into the network — an unmanaged entry point.
+- **Evil twin:** a malicious AP spoofing a legitimate SSID so clients auto-connect; harvests
+  credentials / runs MITM. Defence: 802.1X/EAP-TLS, "verify the network" user training, WPA3.
+- **Jamming:** RF interference denies wireless availability (a DoS at the physical layer).
+- **Bluejacking** (sending unsolicited messages) vs **bluesnarfing** (stealing data over Bluetooth) —
+  know the difference: jacking = push, snarfing = theft.
+- **RFID / NFC attacks:** cloning or relay attacks on contactless cards/badges. Relevant to physical
+  access control and contactless payment.
+- **WPS attacks:** brute-forcing the WPS PIN to recover the WPA passphrase. Defence: disable WPS.
+- **Disassociation:** like deauth — forcibly drops a client; also mitigated by 802.11w.
+
 ---
 
 ## 7. Vulnerability management lifecycle
@@ -273,6 +285,50 @@ remove legacy protocols.
 
 ---
 
+## 10. Vulnerability types — the full 2.3 catalogue
+
+The exam tests recognition of *where* a vulnerability lives, not just named attacks:
+
+| Type | Description | Example / defence |
+|------|-------------|-------------------|
+| **Application** | Flaws in app code/logic | Injection, XSS, memory bugs — secure SDLC, code review |
+| **OS-based** | Weaknesses in the operating system | Unpatched kernel; harden + patch |
+| **Web-based** | Server/web-stack flaws | Directory listing (CWE-548 — spectre's finding), misconfig |
+| **Hardware / firmware** | Physical / low-level | Unpatchable firmware; **end-of-life (EOL)** and **legacy** systems no longer receiving patches → compensating controls |
+| **Virtualization** | Hypervisor/VM flaws | **VM escape** (break out to host), **VM sprawl** (unmanaged VMs) |
+| **Cloud-specific** | Cloud config & shared-responsibility gaps | Open S3 bucket, over-permissive IAM, exposed management plane |
+| **Supply chain** | Trust in a third party is abused | Compromised software update (SolarWinds-style), malicious dependency, hardware implant, MSP compromise |
+| **Cryptographic** | Weak/old crypto | MD5/SHA-1, weak TLS, poor key management, hard-coded keys |
+| **Misconfiguration** | Insecure defaults / human error | Default creds, open ports, verbose errors — the most common real-world root cause |
+| **Mobile device** | Mobile-specific | Sideloading, jailbreak/root, insecure storage, lost-device data |
+| **Zero-day** | No patch exists yet (vendor unaware/unfixed) | Defence is behavioural detection + defence-in-depth, not signatures |
+
+**Supply-chain depth (heavily emphasised in SY0-701):** the four vectors are **software** (poisoned
+update/dependency), **hardware** (implant/counterfeit), **service provider / MSP** (a trusted vendor
+with access is breached), and **open-source dependency** (typosquatting, abandoned packages).
+Mitigations: vendor due diligence, SBOM (Software Bill of Materials), code signing, and least-
+privilege third-party access.
+
+> Portfolio link: [ironveil](../../ironveil)'s elimination of vendor cloud daemons and minimal
+> attack surface is a direct supply-chain / misconfiguration reduction; [oracle](../../oracle)'s
+> assurance discipline (validate the model before trusting it) is the same instinct applied to ML.
+
+## 11. Indicators of malicious activity (2.4)
+
+What a SOC actually *sees* when something is wrong — the bridge to Domain 4 triage:
+
+- **Account anomalies:** lockouts, concurrent sessions, **impossible travel**, blocked/unusual logins.
+- **Resource anomalies:** unexpected CPU/memory/bandwidth consumption (cryptomining, exfil, DoS).
+- **Network anomalies:** out-of-cycle / out-of-hours traffic, beaconing to one host, traffic to known-
+  bad domains/IPs, large outbound transfers.
+- **Content / integrity:** blocked content alerts, unexpected file changes (FIM), defacement.
+- **Logging anomalies:** **missing logs** (an attacker clearing tracks is itself an indicator),
+  sudden log volume spikes.
+- **Published / documented:** the attacker leaks/announces the breach, or it appears on a dark-web
+  dump — sometimes the first sign of a compromise is external.
+
+---
+
 ### Quick self-test
 - APT: what makes it "advanced", "persistent", "threat"?
 - Password spraying vs credential stuffing vs brute force — what is different about each?
@@ -282,3 +338,29 @@ remove legacy protocols.
 - STIX vs TAXII — the format vs the transport.
 - Why is passive recon harder to detect than active, and why does that matter operationally?
 - What two controls defeat rainbow table attacks?
+- Evil twin vs rogue AP — which spoofs an existing SSID, and which is an unauthorised AP on the LAN?
+- Bluejacking vs bluesnarfing — which one steals data?
+- Name the four supply-chain attack vectors and one mitigation for each.
+- VM escape vs VM sprawl — which is an attack and which is a management/hygiene problem?
+- Why is "missing logs" treated as an indicator of compromise rather than a routine IT issue?
+
+### Scenario drills
+
+1. *A vendor pushes a routine software update; days later, multiple customers of that vendor are
+   breached through the updated binary.* Which vulnerability type and vector? → **Supply-chain
+   (software)** — the trust in the vendor's update channel was abused (SolarWinds pattern).
+2. *Staff receive a fluent, personalised, grammatically perfect phishing email referencing a real
+   internal project.* Which two SY0-701 themes are in play, and what defence still holds? →
+   **AI-generated social engineering** + **spear phishing**; the classic "grammar tells" are gone, so
+   defence shifts to context ("does this request make sense?") + **phishing-resistant FIDO2 MFA** and
+   out-of-band verification.
+3. *A SOC sees a user account log in from London and Tokyo within ten minutes, then a spike in
+   outbound traffic to an unfamiliar domain.* Which indicators fired? → **Impossible travel** +
+   **anomalous outbound/beaconing** — likely account compromise with exfiltration; contain the account.
+4. *An asset cannot be patched because the vendor no longer exists and the firmware is EOL.* What
+   vulnerability type, and what is the correct response when you cannot remediate? → **Hardware/
+   firmware EOL/legacy**; apply **compensating controls** (segment/isolate the host, restrict access,
+   monitor closely) and document the risk exception.
+5. *A penetration tester finds the web server returns a full directory listing.* Name the CWE, the
+   vulnerability type, and the fix. → **CWE-548 (directory listing)**, a **web-based / misconfiguration**
+   vulnerability; disable auto-indexing (`Options -Indexes`). *(This is spectre's primary finding.)*
