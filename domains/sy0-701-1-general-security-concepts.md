@@ -361,3 +361,161 @@ integrity mechanism, not a confidentiality one.
    the remote-unlock path.* Map this to one change-management failure and one Zero Trust idea.
    → Missing **backout/dependency analysis**; the initramfs SSH key is the **enforcement point**
    for pre-boot access — no implicit trust without it.
+
+---
+
+## Quick reference card — Domain 1
+
+One-page revision sheet. If any line is not instant recall, re-read that section above.
+
+**Acronyms:**
+AAA (Authentication, Authorisation, Accounting) · MFA (multi-factor authentication) ·
+FAR/FRR/CER (false accept / false reject / crossover error rate) · PE/PA/PEP/PDP (Zero Trust:
+Policy Engine / Administrator / Enforcement Point / Decision Point) · FDE (full-disk encryption) ·
+TPM/HSM/KMS (platform module / security module / key management service) · CA/RA/CSR (certificate
+authority / registration authority / signing request) · CRL/OCSP (revocation list / online status
+protocol) · AEAD (authenticated encryption with associated data) · KDF (key derivation function)
+
+**Key term one-liners:**
+- Control **categories**: technical · managerial · operational · physical. Control **types**:
+  preventive · deterrent · detective · corrective · compensating · directive.
+- **Non-repudiation** = cannot deny the action → digital signatures + audit logs.
+- **Zero Trust**: PE *decides* → PA *acts on the decision* → PEP *enforces* at the resource.
+- **Gap analysis** = current state vs desired state; drives the control roadmap.
+- **Honeypot** (decoy host) / **honeynet** (decoy network) / **honeyfile** (bait file) /
+  **honeytoken** (bait credential) — any touch is a high-signal alert.
+- **Tokenisation** (vault, reversible) vs **masking** (partial display) vs **encryption**
+  (key, reversible) vs **hashing** (one-way).
+- Key stretching: **Argon2id / bcrypt / scrypt / PBKDF2** — slow by design, for passwords.
+- **CRL** = downloaded list (can be stale) · **OCSP** = live query (privacy leak) ·
+  **OCSP stapling** = server presents signed status (best).
+- **TPM** = on-board (laptop FDE) · **HSM** = appliance (CA bulk signing) · **secure
+  enclave/element** = isolated processor region (phone biometrics, Titan M2).
+
+**Exam traps:**
+- Two passwords = ONE factor. MFA needs *different* factor types.
+- A CCTV camera is *physical + detective (and deterrent)* — controls occupy multiple categories.
+- Obfuscation/steganography/base64 are NOT encryption — no confidentiality guarantee.
+- TOTP/SMS/push are possession factors but NOT phishing-resistant; FIDO2/passkeys and
+  certificates are (origin binding defeats real-time relay).
+- The *backout plan* is the change-management element exams most often show being skipped.
+- Wildcard cert convenience vs blast radius: one private-key compromise = every subdomain.
+
+---
+
+## Scenario bank — situation → action
+
+Ten decision-format questions, distinct from the drills above and from
+[soc-scenarios](../scenarios/soc-scenarios.md). Format: situation → what do you do? → correct
+action → why → portfolio link.
+
+**1. The wildcard shortcut**
+- **Situation:** A team requests one wildcard certificate (`*.corp.example`) for twelve new
+  internal services to "simplify renewals". The key would live on all twelve hosts.
+- **What do you do?** Decide the certificate strategy.
+- **Correct action:** Issue per-service or SAN certificates from the internal CA (or at minimum
+  keep the wildcard key in one terminating reverse proxy, never on twelve hosts).
+- **Why:** A wildcard private key on twelve hosts means any single host compromise impersonates
+  *every* subdomain. Smallest practical key blast radius wins.
+- **Portfolio link:** [ironveil](../../ironveil) applies the same containment principle to FIDO2 —
+  the private key never leaves the Nitrokey, so no host compromise can copy it.
+
+**2. Boxes through the badge door**
+- **Situation:** You watch a delivery person follow an employee through the server-room badge door,
+  arms full of boxes. The employee holds the door open for them.
+- **What do you do?** Identify the failure and the control fix.
+- **Correct action:** Report the tailgating event; fix is an **access control vestibule (mantrap)**
+  on that door plus anti-tailgating training ("be rude politely" — everyone badges).
+- **Why:** Politeness defeats badge readers. A vestibule makes one-person-one-badge physically
+  mandatory instead of socially optional.
+- **Portfolio link:** [nullbyte](../../nullbyte)'s threat model assumes physical access attempts —
+  verified boot and per-profile encryption are the device-level equivalent of the vestibule.
+
+**3. "Cameras will stop the thefts"**
+- **Situation:** After equipment thefts, management's whole plan is more CCTV: "cameras will stop it."
+- **What do you do?** Classify what CCTV actually does and complete the control set.
+- **Correct action:** Explain CCTV is **detective + deterrent**, not preventive — add preventive
+  controls (locks, badge access, cable anchors) and keep CCTV for detection/evidence.
+- **Why:** A camera records the theft; it doesn't stop it. Exam logic: match control *function*
+  to the stated goal before choosing the control.
+- **Portfolio link:** [ironveil](../../ironveil) layers function types deliberately — preventive
+  (LUKS2, firewall) over detective (logs) over physical (key-touch requirement).
+
+**4. Production data in the test database**
+- **Situation:** Developers ask for a copy of the production customer database "so test data is
+  realistic". The test environment has weaker access controls.
+- **What do you do?** Choose the data protection technique.
+- **Correct action:** Refuse raw copy; provide **masked or pseudonymised** data (or generated
+  synthetic data) for test use.
+- **Why:** Test environments inherit production's data sensitivity but not its controls. Masking
+  keeps realism without exposure; GDPR minimisation applies to internal copies too.
+- **Portfolio link:** [mirage](../../mirage) generated synthetic vishing data with a CVAE expressly
+  to avoid processing real personal data — privacy by design in practice.
+
+**5. Beacons you can't block yet**
+- **Situation:** Threat intel gives you 40 known C2 domains. You can't yet deploy an IPS, but you
+  control the internal DNS resolver.
+- **What do you do?** Pick the disruption control available today.
+- **Correct action:** Configure a **DNS sinkhole** — resolve those domains to a controlled internal
+  address and alert on every hit.
+- **Why:** Infected hosts identify themselves the moment they beacon, and the C2 connection never
+  leaves the network — detection and disruption from one DNS change.
+- **Portfolio link:** [ironveil](../../ironveil)'s AdGuard Home uses the same mechanism (answer
+  substitution at the resolver) for filtering; the sinkhole is its detection-oriented sibling.
+
+**6. The unrecoverable laptop**
+- **Situation:** An employee leaves abruptly; their FDE-encrypted laptop holds the only copy of a
+  regulated dataset, and nobody else can unlock it.
+- **What do you do?** Identify what was missing and fix it forward.
+- **Correct action:** This is the **key escrow / recovery agent** gap — implement central recovery
+  keys for FDE before the next incident; for this one, accept the loss formally.
+- **Why:** Encryption without escrow turns every departure into potential data destruction.
+  Escrow trades a little confidentiality (vault becomes a target) for availability.
+- **Portfolio link:** [ironveil](../../ironveil) keeps an offline backup LUKS key stored separately —
+  single-user escrow discipline.
+
+**7. The VPN that trusts everyone**
+- **Situation:** Remote staff VPN in and can then reach every internal subnet — file servers, HR
+  systems, the hypervisor management network.
+- **What do you do?** Name the architecture problem and the Zero Trust fix.
+- **Correct action:** Kill the implicit trust zone: segment by resource, put **policy enforcement
+  points** in front of sensitive systems, authenticate per-application (ZTNA), least privilege
+  per role.
+- **Why:** "On the VPN" is network location, and Zero Trust grants nothing for location. One
+  phished VPN credential currently equals the whole estate.
+- **Portfolio link:** [nullbyte](../../nullbyte) — nine profiles, no implicit trust across any
+  boundary, even for the device owner. Same principle at device scale.
+
+**8. The 2 a.m. emergency change**
+- **Situation:** During an outage, an engineer hot-patched a production firewall at 2 a.m. — no
+  ticket, no review, and now nobody is sure exactly what changed.
+- **What do you do?** Handle the governance, not just the firewall.
+- **Correct action:** Invoke the **emergency change** path: document retrospectively now, diff the
+  config against version control, CAB review after the fact, and make the emergency procedure
+  known so the next one is logged *as it happens*.
+- **Why:** Change management must bend in emergencies, not break — an undocumented change is
+  tomorrow's unexplained outage or unnoticed backdoor.
+- **Portfolio link:** [ironveil](../../ironveil)'s initramfs rebuild SOP exists for exactly this
+  reason: high-risk changes get a documented procedure *and* a backout path.
+
+**9. Where do the CA keys live?**
+- **Situation:** You're standing up an internal CA. One proposal stores the root key on the CA
+  server's disk "with strong file permissions".
+- **What do you do?** Choose the key storage architecture.
+- **Correct action:** Root key in an **HSM** (or at minimum offline, with intermediates doing
+  day-to-day issuance); endpoint FDE keys belong in each machine's **TPM**.
+- **Why:** File permissions die with the OS that enforces them. Hardware key storage survives OS
+  compromise — and a stolen root key is a silent forge-everything event.
+- **Portfolio link:** [nullbyte](../../nullbyte)'s Titan M2 is the same hierarchy decision at
+  device scale: keys live in a hardware element the OS can query but never extract.
+
+**10. "It wasn't me"**
+- **Situation:** A bad config change came from the shared `netadmin` account. The contractor who
+  was on shift denies making it, and you cannot prove otherwise.
+- **What do you do?** Identify the broken property and the fix.
+- **Correct action:** Eliminate shared accounts: individual named accounts, MFA, command
+  accounting (TACACS+ style) — so every change binds to one authenticated identity.
+- **Why:** **Non-repudiation** needs identity + integrity-protected logs. A shared credential
+  makes "who" unprovable by design; no forensic skill recovers what was never recorded.
+- **Portfolio link:** [spectre](../../spectre)'s SHA-256-hashed evidence chain is the same
+  property in pentest form — findings that cannot be disputed after the fact.
