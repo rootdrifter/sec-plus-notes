@@ -273,3 +273,176 @@ and executive team. "CVSS 9.8" means nothing to a CFO; "risk of £X loss within 
 7. *An auditor must give external customers assurance that a SaaS provider's controls operated
    effectively over the past year.* Which report? → **SOC 2 Type II** (effectiveness *over a period*),
    as opposed to Type I (design *at a point in time*).
+
+---
+
+## Quick reference card — Domain 5
+
+One-page revision sheet. If any line is not instant recall, re-read that section above.
+
+**Acronyms:**
+SLE/ALE/ARO/EF/AV (single & annualised loss expectancy, annual rate, exposure factor, asset value) ·
+GRC (governance, risk, compliance) · NIST CSF/RMF (cybersecurity framework / risk management
+framework) · ISMS (information security management system, ISO 27001) · PDCA (plan-do-check-act) ·
+GDPR/DPO/DSAR (EU/UK data law, protection officer, subject access request) · SCC (standard
+contractual clauses) · SLA/NDA/MOU/BPA/ISA/DPA (service level / non-disclosure / understanding /
+partnership / interconnection / data processing agreements) · SBOM (software bill of materials) ·
+MTTD/MTTR (mean time to detect / respond) · KRI/KPI (key risk / performance indicator) ·
+AUP (acceptable use policy)
+
+**Key term one-liners:**
+- Risk = likelihood × impact. Treatments: mitigate · transfer · avoid · accept (formal sign-off).
+- Inherent risk (before controls) → residual risk (after). Appetite (willingness) vs tolerance
+  (acceptable variance).
+- Formulas: **SLE = AV × EF**, **ALE = SLE × ARO**; a control is ALE-justified when it costs less
+  than the loss it prevents per year.
+- Frameworks: NIST CSF functions **Identify → Protect → Detect → Respond → Recover** · ISO 27001
+  (certifiable standard) vs 27002 (implementation guidance) · CIS Controls IG1–IG3 (prioritised) ·
+  PCI DSS (card data) · SOC 2 (trust services reporting).
+- GDPR: 72-hour authority notification · controller decides purpose, processor acts on
+  instruction · DPO advises independently · transfers need adequacy/SCCs · fines to 4% turnover.
+- Roles: data **owner** (business decision-maker) · **custodian/steward** (day-to-day handling).
+- Audit (conformance to a standard, pass/fail) vs assessment (posture, findings). External >
+  internal for assurance. Attestation = formal third-party statement.
+- SOC 2: Type I = design at a point in time · Type II = operating effectiveness over a period.
+- Testing ladder: vulnerability assessment → pentest → red team (campaign) → purple (joint) ·
+  tabletop = discussion-based process test.
+- Metrics: MTTD/dwell (detection speed) · MTTR (response speed) · KRI = leading risk signal ·
+  KPI = performance vs target.
+
+**Exam traps:**
+- Risk transfer moves financial consequences — never liability or reputation.
+- ISO **27001** is what you certify against; **27002** is how-to guidance.
+- MOU is non-binding; SLA/BPA/contracts bind.
+- The data *owner* classifies data — not IT, who usually act as custodian.
+- A KRI leads (risk rising); a KPI lags (how you performed).
+- Boards buy "£X expected loss avoided", not "CVSS 9.8".
+
+---
+
+## Scenario bank — situation → action
+
+Ten decision-format questions, distinct from the drills above and from
+[soc-scenarios](../scenarios/soc-scenarios.md). Format: situation → what do you do? → correct
+action → why → portfolio link.
+
+**1. Ship it anyway?**
+- **Situation:** A release is due before peak trading season with one known medium-severity
+  vulnerability; fixing it means missing the season. The product lead says "ship it".
+- **What do you do?** Make the risk decision properly.
+- **Correct action:** Put it through **formal risk acceptance**: the named risk owner (business,
+  not security) signs off, the acceptance is time-boxed with a review date, compensating
+  monitoring is applied, and it lands in the risk register — not in a hallway conversation.
+- **Why:** Accepting risk is legitimate; *undocumented* acceptance is how an organisation
+  discovers, post-breach, that nobody owned the decision.
+- **Portfolio link:** [spectre](../../spectre) rates each finding likelihood × impact for exactly
+  this purpose — giving the owner something concrete to accept or fund.
+
+**2. The vendor who won't answer**
+- **Situation:** A vendor processing your customer data refuses the security questionnaire:
+  "our security is proprietary information."
+- **What do you do?** Get assurance another way or escalate.
+- **Correct action:** Require independent evidence instead — **ISO 27001 certificate / SOC 2
+  Type II report** — and invoke or negotiate a **right-to-audit clause**. If they offer nothing,
+  treat as a risk finding for the business owner: compensate (minimise shared data) or exit.
+- **Why:** Due diligence is non-negotiable for processors of your data; "trust us" is the answer
+  attackers also give. Certifications exist precisely so vendors can prove posture without
+  exposing internals.
+- **Portfolio link:** §5–6 above (agreement types, audits) — the contractual toolkit this
+  scenario draws on.
+
+**3. "Keep it all forever"**
+- **Situation:** Marketing wants the customer database kept indefinitely — "the data might be
+  useful someday" — including records of customers inactive for a decade.
+- **What do you do?** Apply data governance.
+- **Correct action:** Enforce **purpose and storage limitation**: define retention schedules per
+  data class, justify each against a stated purpose, and delete (or anonymise) past retention.
+  "Might be useful" is not a lawful purpose under GDPR.
+- **Why:** Old data is pure liability — it can be breached, subpoenaed, and fined, but the value
+  evaporated years ago. Minimisation shrinks the blast radius before any control has to work.
+- **Portfolio link:** [mirage](../../mirage) chose synthetic data over collecting real personal
+  data — the strongest form of minimisation: never hold it at all.
+
+**4. The plan that's never been run**
+- **Situation:** The incident response plan is twelve months old and has never been exercised.
+  Budget for testing this quarter is small.
+- **What do you do?** Pick the right first exercise.
+- **Correct action:** Run a **tabletop exercise**: a facilitated scenario walkthrough with the
+  actual responders (and an executive), testing decisions, escalation paths, and contacts — then
+  fix the plan and graduate to technical simulation later.
+- **Why:** Tabletops are cheap and surface the expensive failures (nobody knows who declares an
+  incident; the contact list is stale) before a real attacker administers the test.
+- **Portfolio link:** [gauntlet](../../gauntlet)'s premise is the same: rehearse the methodology
+  in practice environments so the first execution isn't the real event.
+
+**5. Whose data is it anyway?**
+- **Situation:** A dispute: IT wants the HR dataset classified Confidential; HR says Internal is
+  fine. Both ask security to "decide".
+- **What do you do?** Route the decision to the right role.
+- **Correct action:** The **data owner** — the HR business function — decides classification,
+  guided by policy criteria; IT (as **custodian**) implements the handling controls that follow.
+  Security facilitates the criteria, not the verdict.
+- **Why:** Classification is a business-impact judgement about consequence of disclosure — only
+  the function accountable for the data can make it; custodians enforce, owners decide.
+- **Portfolio link:** §4 above (governance roles) — owner / controller / processor / custodian
+  distinctions this hinges on.
+
+**6. Payroll in someone else's cloud**
+- **Situation:** Procurement is about to sign a payroll SaaS that will process all employee
+  personal data. They ask if the standard purchase contract is enough.
+- **What do you do?** Add the missing instrument.
+- **Correct action:** Require a **DPA (Data Processing Agreement)**: processing scope and
+  instructions, security measures, sub-processor disclosure, breach-notification SLA, and
+  audit/return-or-delete terms — plus due diligence on the provider before signature.
+- **Why:** Under GDPR a controller may only use processors providing "sufficient guarantees",
+  bound by contract. No DPA = non-compliant on day one, before any breach.
+- **Portfolio link:** §3/§5 above (GDPR obligations; agreement types) — the compliance chain
+  this scenario walks.
+
+**7. Punish the clickers?**
+- **Situation:** The first phishing simulation: 30% clicked. Leadership proposes disciplinary
+  action for anyone who clicks twice.
+- **What do you do?** Shape the programme, not the punishment.
+- **Correct action:** Push back: keep simulations educational (immediate teachable moment),
+  track **report rate** as the headline metric (not just click rate), target repeat-clickers with
+  tailored training, and protect the no-blame reporting culture.
+- **Why:** Punishment teaches one lesson: *never report*. A user who clicks and reports in two
+  minutes is your best detection; a user who clicks and hides is your breach.
+- **Portfolio link:** [mirage](../../mirage)'s finding — detection fails on surface cues — is why
+  training must build contextual judgement ("does this request make sense?"), not fear.
+
+**8. "Which document says how?"**
+- **Situation:** An engineer asks where it's written *exactly* how to harden an Ubuntu server.
+  They were handed the corporate security policy and found principles, not steps.
+- **What do you do?** Map the governance hierarchy.
+- **Correct action:** Point to the right layer: the **policy** mandates ("servers shall be
+  hardened to baseline"), the **standard/baseline** specifies (CIS Ubuntu benchmark, internal
+  baseline), and the **procedure/SOP** gives the steps. If the lower layers don't exist, that's
+  the gap to fix.
+- **Why:** Policies that try to contain command lines rot instantly; procedures without a policy
+  mandate are optional. Each layer does one job.
+- **Portfolio link:** [spectre](../../spectre) hardened PostgreSQL **to CIS Level 1** — a worked
+  example of standard → procedure → verified result.
+
+**9. "Where do we stand?"**
+- **Situation:** A new CISO's first request: "Show me where we are against NIST CSF — what we
+  have, what's missing, what's weakest."
+- **What do you do?** Choose the right exercise.
+- **Correct action:** Run a **gap analysis / framework assessment**: score current state against
+  each CSF function and category, rate maturity, and produce a prioritised roadmap. This is an
+  assessment (posture), not an audit (conformance pass/fail).
+- **Why:** You can't sequence investment without knowing the delta between current and target
+  state — and calling it an audit sets the wrong expectation of pass/fail certification.
+- **Portfolio link:** §2/§6 above (framework table; audit vs assessment) — the distinction this
+  request turns on.
+
+**10. Marking your own homework**
+- **Situation:** To win a customer, the company wants to attest its controls. The proposal: the
+  engineering team that built the controls writes and signs the assessment.
+- **What do you do?** Fix the assurance model.
+- **Correct action:** Require **independent assessment** — an external auditor (SOC 2 / ISO 27001
+  certification body) for customer-facing attestation; internal review can prepare, never attest.
+- **Why:** Assurance value scales with independence — a builder attesting their own controls has
+  a structural conflict of interest, and informed customers will discount it to zero.
+- **Portfolio link:** [gauntlet](../../gauntlet) practises on externally-graded platforms for the
+  same reason — the score means something because the grader isn't the player.
