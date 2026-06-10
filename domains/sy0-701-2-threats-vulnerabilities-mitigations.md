@@ -364,3 +364,175 @@ What a SOC actually *sees* when something is wrong — the bridge to Domain 4 tr
 5. *A penetration tester finds the web server returns a full directory listing.* Name the CWE, the
    vulnerability type, and the fix. → **CWE-548 (directory listing)**, a **web-based / misconfiguration**
    vulnerability; disable auto-indexing (`Options -Indexes`). *(This is spectre's primary finding.)*
+
+---
+
+## Quick reference card — Domain 2
+
+One-page revision sheet. If any line is not instant recall, re-read that section above.
+
+**Acronyms:**
+APT (advanced persistent threat) · OSINT/ISAC (open-source intel / sharing centre) · STIX/TAXII
+(intel format / transport) · IoC/IoA (indicator of compromise / of attack) · TTP (tactics,
+techniques, procedures) · BEC (business email compromise) · RAT (remote access trojan) ·
+SQLi/XSS/CSRF (injection / cross-site scripting / request forgery) · TOCTOU (time-of-check
+time-of-use) · CVE/CVSS/CWE/KEV (catalogue entry / severity score / weakness type / known-exploited
+list) · SBOM (software bill of materials) · EOL/EOSL (end of life / of service life)
+
+**Key term one-liners:**
+- Threat actors by motivation: script kiddie (thrill) · hacktivist (ideology) · insider (revenge/
+  money/negligence) · organised crime (financial) · nation-state/APT (espionage, long dwell).
+- Social-engineering levers: authority · urgency · scarcity · consensus · familiarity · trust ·
+  intimidation — the exam tests the *mechanism*, not the name.
+- Channel map: phishing (email) · spear/whaling (targeted/exec email) · vishing (voice) ·
+  smishing (SMS) · pharming (DNS) · watering hole (site the target visits) · baiting (planted media).
+- Malware traits: virus (host file + user action) · worm (self-propagating) · trojan (disguise) ·
+  rootkit (kernel hide) · bootkit (boot chain — beaten by verified boot) · logic bomb (trigger
+  condition) · fileless (memory/LOLBins — needs EDR, not signatures).
+- Wireless: rogue AP (unauthorised) vs evil twin (spoofed SSID) · deauth/disassociation (beaten by
+  802.11w) · bluejacking (push) vs bluesnarfing (theft) · disable WPS.
+- Credential attacks: brute force (one account, many guesses) · spraying (many accounts, few
+  guesses) · stuffing (breached pairs reused) · rainbow tables (beaten by salting).
+- Supply-chain vectors: software update · hardware implant · MSP/service provider · open-source
+  dependency. Mitigations: due diligence, SBOM, code signing, least-privilege vendor access.
+- Vuln scan outputs: false positive (wasted effort) vs false negative (missed attack — the
+  dangerous one). Credentialed scans see more; KEV listing outranks raw CVSS.
+
+**Exam traps:**
+- XSS abuses the *user's* trust in the site; CSRF abuses the *site's* trust in the user's browser.
+- APT ≠ nation-state only — funded criminal groups qualify.
+- A CVSS 7.5 on KEV (actively exploited) outranks a CVSS 9.8 with no exploit.
+- Zero-day defence is behavioural detection + defence in depth — never signatures.
+- Missing logs are an *indicator*, not an IT hiccup.
+- Passive recon leaves no logs on the target — you cannot detect what never touched you.
+
+---
+
+## Scenario bank — situation → action
+
+Ten decision-format questions, distinct from the drills above and from
+[soc-scenarios](../scenarios/soc-scenarios.md). Format: situation → what do you do? → correct
+action → why → portfolio link.
+
+**1. The one-letter package**
+- **Situation:** A build pipeline pulls `pyt0rch-utils` — a package one character off a popular
+  library, published last week, already in three internal projects.
+- **What do you do?** Classify the threat and respond.
+- **Correct action:** Treat as **typosquatting / open-source supply chain** compromise: freeze the
+  pipeline, remove the package, audit what it did (exfil? credentials?), then enforce dependency
+  pinning, an internal registry/allow-list, and SBOM generation.
+- **Why:** Attackers publish lookalike packages precisely because one developer typo grants code
+  execution inside your build. Trust in a name is not verification.
+- **Portfolio link:** [oracle](../../oracle)'s discipline — validate the artefact before trusting
+  it — is the same instinct the dependency chain needs.
+
+**2. The parcel that costs £1.99**
+- **Situation:** Staff report SMS messages: "Your parcel is held — pay £1.99" with a shortened
+  link. Two admit entering their corporate password on the resulting page (it "looked like the
+  company portal").
+- **What do you do?** Name the attack and run the response.
+- **Correct action:** **Smishing** with credential harvesting: force-reset both accounts, check
+  for logins since the click (impossible travel, new MFA enrolments), block the domain, alert all
+  staff, and report the URL.
+- **Why:** Mobile screens hide URL detail and shortened links defeat inspection — assume harvested
+  credentials are already being replayed; speed of reset beats analysis here.
+- **Portfolio link:** [mirage](../../mirage) studies exactly these channels (phishing/smishing/
+  vishing) and the urgency-plus-small-amount lever this lure uses.
+
+**3. The forum everyone reads**
+- **Situation:** EDR flags drive-by exploit attempts on four engineers' laptops within an hour.
+  All four had visited the same niche industry forum that morning.
+- **What do you do?** Identify the technique and respond beyond the four hosts.
+- **Correct action:** Treat as a **watering hole** attack: isolate/scan the four hosts, block the
+  forum at web filtering, hunt for the same IOCs estate-wide, and notify the forum operator.
+  Patch level and EDR coverage decide who survived.
+- **Why:** Watering holes compromise a site the *target group* trusts — the four alerts are a
+  sample, not the population; anyone who visited is in scope.
+- **Portfolio link:** [nullbyte](../../nullbyte) confines browsing to low-trust compartments —
+  per-profile isolation is the architectural answer to "a trusted site turned hostile".
+
+**4. `' OR 1=1--` in the logs**
+- **Situation:** WAF logs show a burst of requests against the login endpoint containing
+  `' OR 1=1--` and UNION SELECT strings, all returning HTTP 403.
+- **What do you do?** Classify and decide whether 403 means "done".
+- **Correct action:** **SQL injection** probing: confirm the WAF blocked *all* variants (not just
+  these), verify the application itself uses parameterised queries, and hunt for any 200 responses
+  to similar payloads before/after the burst.
+- **Why:** A WAF is a compensating control, not the fix — the fix is in the code. Blocked probes
+  also tell you you're being actively targeted; the attacker's next payload may not match the rule.
+- **Portfolio link:** [spectre](../../spectre)'s method applies: verify the finding, map it to its
+  CWE (here CWE-89), and fix root cause rather than trusting the front-line filter.
+
+**5. The server that got slow**
+- **Situation:** A batch server's CPU has sat at 100% for days. You find an unfamiliar process
+  named `kworkerd` (not a real kernel thread) connecting to a mining pool on port 3333.
+- **What do you do?** Classify and respond.
+- **Correct action:** **Cryptomining malware** (resource-consumption indicator): isolate, capture
+  the binary and persistence mechanism, find the entry vector (often an unpatched service or
+  stolen SSH key), eradicate, patch, and watch for re-infection.
+- **Why:** Cryptominers are low-noise by design — sustained anomalous resource use IS the
+  indicator. The miner also proves an attacker had execution; the same door admits worse payloads.
+- **Portfolio link:** [ironveil](../../ironveil)'s minimal-services baseline is what makes an
+  imposter process stand out — you can't spot anomalies without a known-good normal.
+
+**6. Clean scan, dirty host**
+- **Situation:** A host behaves erratically; connections appear in firewall logs that local tools
+  don't show. The installed AV reports the system clean.
+- **What do you do?** Reconcile the contradiction.
+- **Correct action:** Suspect a **rootkit**: examine the host from *outside* its OS — boot from
+  trusted media, compare external network captures against local netstat output, image the disk
+  for offline analysis. Rebuild from known-good rather than "cleaning".
+- **Why:** A kernel-level rootkit controls the APIs the AV asks — the OS is lying. Visibility must
+  come from a layer the attacker doesn't own.
+- **Portfolio link:** [nullbyte](../../nullbyte)'s verified boot is the architectural counter: a
+  hardware root of trust validates the OS before it can lie to you.
+
+**7. The leaving admin's parting gift**
+- **Situation:** During offboarding checks on a departing (and disgruntled) admin, you find a
+  scheduled task created last month: on the 1st of next month it deletes the finance share.
+- **What do you do?** Classify and scope the response.
+- **Correct action:** A **logic bomb** (insider threat): disable it, preserve it as evidence,
+  then audit *everything* that account touched — one discovered implant means the search is for
+  the second one. Involve HR/legal; tighten offboarding to same-day access revocation.
+- **Why:** Logic bombs weaponise legitimate access plus time delay. Discovery of one device is
+  the start of the investigation, not the end.
+- **Portfolio link:** [spectre](../../spectre)'s hash-verified session logs model the evidence
+  discipline this investigation needs — provable, timestamped, tamper-evident records.
+
+**8. The crash that's more than a crash**
+- **Situation:** A legacy in-house service crashes whenever a request field exceeds ~1,000
+  characters. A developer calls it "just a stability bug".
+- **What do you do?** Reframe the risk and respond.
+- **Correct action:** Treat as a probable **buffer overflow**: a crash on long input is the
+  canonical symptom, and what crashes today may execute shellcode tomorrow. Confirm DEP/ASLR are
+  enabled, get the input-handling code fixed (bounds checking), and restrict network exposure
+  meanwhile.
+- **Why:** The distance between denial-of-service and code execution is attacker skill, not your
+  controls. MS17-010 was "just" an SMB parsing bug.
+- **Portfolio link:** [gauntlet](../../gauntlet)'s Blue writeup walks exactly that path — an SMBv1
+  buffer overflow from crash-class bug to SYSTEM shell.
+
+**9. DNS that's too chatty**
+- **Situation:** DNS logs show one workstation making thousands of queries for long, random-looking
+  subdomains of a single external domain — `a8f3e2...x91.example-cdn.net` — at a steady rate.
+- **What do you do?** Identify the channel and respond.
+- **Correct action:** **DNS tunnelling** (exfiltration or C2 over port 53): block/sinkhole the
+  domain, isolate the workstation, estimate exfil volume from query count × payload size, and
+  identify what data the host could reach.
+- **Why:** DNS is allowed outbound almost everywhere, so attackers encode data in queries. High-
+  entropy subdomains at machine-regular intervals are the signature; resolvers that log are the
+  detection point.
+- **Portfolio link:** [ironveil](../../ironveil) routes every DNS query through a logging,
+  filtering resolver (AdGuard Home) before it leaves the host — precisely the visibility this
+  detection depends on.
+
+**10. The scanner's red wall**
+- **Situation:** This month's scan: 14 criticals on an isolated dev box, and one medium-severity
+  finding on the internet-facing payment server — which CISA added to KEV yesterday.
+- **What do you do?** Order the remediation queue.
+- **Correct action:** Patch the payment server's KEV-listed medium **first**. The dev-box
+  criticals follow, prioritised by exposure and asset value.
+- **Why:** Priority = severity × exposure × exploitability × asset criticality — not raw CVSS.
+  Actively-exploited beats theoretical; internet-facing beats isolated; payment beats dev.
+- **Portfolio link:** [spectre](../../spectre) ranks findings the same way — qualitative
+  likelihood × impact per finding, not a single scanner number.
