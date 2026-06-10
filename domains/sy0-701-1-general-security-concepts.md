@@ -109,9 +109,29 @@ previous authentication.
 network (microsegmentation, SASE), application (WAF, app-layer controls), data (encryption,
 classification, DLP), visibility/analytics (SIEM, UEBA, SOAR).
 
+### Zero Trust planes (high-yield SY0-701 terminology)
+
+The exam splits Zero Trust into a **control plane** (decides) and a **data plane** (enforces).
+Know these terms precisely — they appear as direct definition questions:
+
+| Term | Plane | Role |
+|------|-------|------|
+| **Policy Engine (PE)** | Control | Makes the allow/deny/revoke decision by evaluating policy against signals |
+| **Policy Administrator (PA)** | Control | Executes the PE's decision — generates/revokes the session token or credential |
+| **Policy Enforcement Point (PEP)** | Data | The gateway that actually allows, monitors, and terminates the connection to the resource |
+| **Policy Decision Point (PDP)** | Control | Umbrella term for PE + PA together |
+| **Adaptive identity** | Control | Authentication strength scales with risk signals (location, device, behaviour) |
+| **Threat scope reduction** | Both | Minimise blast radius — least privilege, microsegmentation |
+| **Implicit trust zones** | Data | The (small, audited) area a subject reaches after a PEP grants access |
+
+Mnemonic: the **PE decides**, the **PA acts on the decision**, the **PEP sits in front of the
+resource and enforces it**. A request hits the PEP → PEP asks the PDP → PE evaluates policy →
+PA issues/revokes the token → PEP allows or blocks.
+
 > Portfolio link: [nullbyte](../../nullbyte)'s nine-profile compartmentalisation is Zero Trust
 > applied to a device — each profile is a separate trust domain with independent credentials,
-> network policy, and data isolation.
+> network policy, and data isolation. The per-profile lockscreen credential acts as the
+> enforcement point: no implicit trust carries across a profile boundary even for the device owner.
 
 ---
 
@@ -193,6 +213,124 @@ Different from tokenisation — masking may be irreversible.
 
 ---
 
+## 8. Deception and disruption technology
+
+SY0-701 objective 1.2 explicitly lists deception technology. These controls do not prevent an
+attack — they **detect** intrusion and **waste attacker effort** with high-fidelity, low-false-positive
+signals. Because no legitimate user has any reason to touch them, any interaction is suspicious
+by definition.
+
+| Technique | What it is | Detection value |
+|-----------|-----------|-----------------|
+| **Honeypot** | A single decoy system that looks exploitable | Any connection is an alert; studies attacker TTPs |
+| **Honeynet** | A whole network of honeypots | Observes lateral movement and multi-stage attacks |
+| **Honeyfile** | A bait file (e.g. `passwords.xlsx`) with no real value | Opening/exfiltrating it triggers an alert |
+| **Honeytoken** | A fake credential, API key, or DB record seeded into real systems | Use of the token anywhere proves data was stolen and shows where |
+
+**Why these are high-signal:** a SIEM drowns in false positives, but a honeytoken firing is almost
+never benign — it is one of the cleanest breach indicators a SOC can deploy. Canary tokens (a
+hosted honeytoken service) are the common real-world implementation.
+
+**DNS sinkhole** (a disruption control on the same objective): a resolver that returns a controlled
+answer for known-malicious domains, so infected hosts beaconing to C2 are redirected and logged
+instead of reaching the attacker. This is the *offensive-detection* sibling of the DNS *filtering*
+in ironveil's AdGuard stack — same mechanism (authoritative answer substitution), different intent.
+
+---
+
+## 9. Change management (objective 1.3)
+
+The exam treats change management as a **security** topic because most outages and many incidents
+are self-inflicted by uncontrolled change. Memorise both the process elements and the technical
+implications.
+
+**Process (governance side):**
+
+| Element | Purpose |
+|---------|---------|
+| **Approval process** | Changes are authorised before implementation (often a Change Advisory Board, CAB) |
+| **Ownership** | A named owner is accountable for the change end to end |
+| **Stakeholders** | Everyone affected is identified and consulted |
+| **Impact analysis** | What could this break? What is the blast radius? |
+| **Test results** | Validate in a non-production environment first |
+| **Backout / rollback plan** | A defined way to revert if the change fails — mandatory |
+| **Maintenance window** | Scheduled low-impact time to apply the change |
+| **Standard Operating Procedure (SOP)** | Documented, repeatable steps |
+
+**Technical implications (the security-relevant side):**
+- **Allow lists / deny lists** must be updated when a change adds or removes a service.
+- **Restricted activities** — some changes require elevated approval or four-eyes review.
+- **Downtime, service/application restart, dependency mapping** — a change to one service can
+  cascade; an unmapped dependency is how a "small" change causes a major outage.
+- **Legacy applications** resist change (no test environment, no vendor support) — a recognised risk.
+- **Documentation:** update network/data-flow diagrams and policies; use **version control** so
+  every change is attributable and reversible.
+
+> Portfolio link: [ironveil](../../ironveil)'s `dracut -f --regenerate-all` initramfs rebuild is a
+> textbook change-management case — it has a backout path (the prior initramfs), a dependency
+> (the baked-in ed25519 key must be re-pinned on the GrapheneOS client or remote unlock breaks),
+> and a documented SOP. Skipping the impact analysis here would lock the operator out of their
+> own encrypted disk: change management *is* operational security.
+
+---
+
+## 10. PKI and certificates (objective 1.4 — deep)
+
+Objective 1.4 ("appropriate cryptographic solutions") is heavily certificate-focused. The §6
+use-case table covers primitive selection; this section covers the **public-key infrastructure**
+that the exam tests in detail.
+
+### Trust chain
+
+- **Certificate Authority (CA)** — issues and vouches for certificates. The **root CA** is the
+  trust anchor (kept offline); **intermediate CAs** issue day-to-day certs so the root key stays
+  protected. A client trusts a cert if it chains to a trusted root.
+- **Registration Authority (RA)** — verifies identity before the CA issues a cert.
+- **CSR (Certificate Signing Request)** — what you generate (with your public key + identity) and
+  submit to the CA. Your private key never leaves your control.
+
+### Validity and revocation (classic exam trap)
+
+| Mechanism | How it works | Trade-off |
+|-----------|-------------|-----------|
+| **CRL (Certificate Revocation List)** | CA publishes a signed list of revoked serials; client downloads it | Can be large and stale between updates |
+| **OCSP (Online Certificate Status Protocol)** | Client queries the CA for one cert's status in real time | Per-query latency; privacy leak to the CA |
+| **OCSP stapling** | The *server* fetches and attaches a time-stamped OCSP response to its TLS handshake | Removes the client→CA round trip and the privacy leak — preferred |
+
+**Key escrow** — a copy of a private key is held by a trusted third party so encrypted data is
+recoverable if the key is lost. A confidentiality/availability trade-off: convenient for recovery,
+but the escrow agent becomes a high-value target.
+
+### Certificate types
+
+- **Wildcard** (`*.example.com`) — one cert for all subdomains; convenient but one compromise
+  exposes them all.
+- **SAN (Subject Alternative Name)** — multiple explicit names on one cert.
+- **Self-signed** — no external CA; fine for internal/lab use, untrusted by default in browsers.
+- **Certificate pinning** — the client hard-binds a known cert/public key, defeating a fraudulent
+  CA-issued cert (the on-path mitigation referenced in Domain 2).
+
+### Cryptographic hardware and key storage
+
+| Component | Role |
+|-----------|------|
+| **TPM (Trusted Platform Module)** | On-board chip storing keys/measurements; backs full-disk encryption and measured boot |
+| **HSM (Hardware Security Module)** | Dedicated, tamper-resistant appliance for high-volume key ops (CAs, payment) |
+| **KMS (Key Management Service)** | Cloud-managed key lifecycle (generation, rotation, destruction) |
+| **Secure enclave** | Isolated processor region for keys/biometrics (Apple Secure Enclave, Titan M2) |
+
+**Key stretching** — deliberately slow KDFs (**Argon2id, bcrypt, scrypt, PBKDF2**) make brute force
+expensive; the defence for password and passphrase storage. **Blockchain / open public ledger** —
+distributed, append-only, integrity via hash chaining; the exam frames it as a tamper-evident
+integrity mechanism, not a confidentiality one.
+
+> Portfolio link: [ironveil](../../ironveil) is a concrete map of this objective — LUKS2 uses
+> **Argon2id key stretching**; the **Nitrokey 3A NFC** is a hardware key store enrolling FIDO2
+> credentials; and [nullbyte](../../nullbyte)'s **Titan M2** is a secure-element root of trust.
+> The portfolio demonstrates the 1.4 toolset rather than just naming it.
+
+---
+
 ### Quick self-test
 - Name a control that is simultaneously technical AND detective.
 - FIDO2 is phishing-resistant but TOTP is not — explain the mechanism.
@@ -200,3 +338,26 @@ Different from tokenisation — masking may be irreversible.
 - Zero Trust vs perimeter model — what is the core change in assumption?
 - Tokenisation vs data masking vs encryption — what distinguishes them?
 - CER — which direction do you bias it for maximum security? For maximum usability?
+- Zero Trust planes: which component *decides* access, which *acts on* the decision, and which
+  *enforces* it in front of the resource? (PE / PA / PEP)
+- Honeytoken vs honeypot — which is seeded inside a real production system, and why is a
+  honeytoken firing such a high-signal alert?
+- CRL vs OCSP vs OCSP stapling — which removes the client→CA round trip and the privacy leak?
+- TPM vs HSM vs secure enclave — match each to: a CA's bulk signing appliance, a laptop's
+  measured-boot key store, a phone's biometric/key isolation chip.
+
+### Scenario drills
+
+1. *A change ticket adds a new public-facing service. The firewall allow list is updated and the
+   service goes live, but an overnight batch job that depended on the old port silently fails.*
+   Which change-management element was skipped? → **Impact analysis / dependency mapping.**
+2. *A SOC receives an alert that a credential named `svc_backup_DONOTUSE` was used to log in from
+   an external IP. No such account is provisioned for real use.* What control just fired, and what
+   does it prove? → A **honeytoken**; it proves credential theft and reveals the attacker's entry path.
+3. *A browser warns that a site's certificate cannot be checked because the revocation server is
+   unreachable.* Which revocation mechanism would have avoided the extra round trip by having the
+   server present a signed status itself? → **OCSP stapling.**
+4. *An engineer rebuilds ironveil's initramfs but forgets the baked-in SSH key is a dependency of
+   the remote-unlock path.* Map this to one change-management failure and one Zero Trust idea.
+   → Missing **backout/dependency analysis**; the initramfs SSH key is the **enforcement point**
+   for pre-boot access — no implicit trust without it.
