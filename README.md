@@ -51,7 +51,10 @@ implementation so revision and evidence reinforce each other.
   with **"Portfolio link"** callouts connecting a concept to a concrete build.
 - Acronym-heavy by design: where two concepts are easily confused, the notes state the
   distinguishing line explicitly ("X vs Y: …").
-- Each domain ends with a **quick self-test** to rehearse recall.
+- Each domain ends with the same four-part rehearsal set: a **quick self-test** (recall), short
+  **scenario drills**, a one-page **quick reference card** (key terms, acronyms, exam traps —
+  the last-day revision sheet), and a ten-question **scenario bank** in
+  situation → what-do-you-do → correct action → why → portfolio-link format (PBQ-style judgement).
 
 ## Supplementary — classic six-area notes
 
