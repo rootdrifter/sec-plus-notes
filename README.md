@@ -20,7 +20,8 @@ deployed and operated.
 | 4 | [Security Operations](domains/sy0-701-4-security-operations.md) | 28% | SIEM/SOC, IAM operations, incident response, digital forensics, vuln management |
 | 5 | [Security Program Management & Oversight](domains/sy0-701-5-program-management.md) | 20% | Governance, risk management, third-party risk, compliance, audits & assessments |
 | — | [Exam tips & high-yield topics](domains/sy0-701-exam-tips.md) | — | Trap questions, acronym disambiguation, formula sheet, last-day checklist |
-| — | [Practice questions (all 5 domains)](practice-questions.md) | — | 22 exam-style MCQ + scenario items with a full answer key and explanations |
+| — | [Practice questions (all 5 domains)](practice-questions.md) | — | 50 exam-style items (weighted by domain) with answers, distractor notes, and portfolio links |
+| — | [SOC shift scenarios](scenarios/soc-scenarios.md) | — | 25 operational "you're on shift, X happens — what do you do?" decision scenarios (5 per domain) |
 
 ## Portfolio cross-references
 
