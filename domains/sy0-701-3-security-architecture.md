@@ -247,4 +247,27 @@ for transfers outside the EU/EEA).
 - Why does OT/ICS prioritise availability over confidentiality?
 - 3-2-1 rule — what do each of the three numbers mean?
 - Full vs incremental vs differential backup — which is fastest to back up? Which is fastest to restore?
+
+### Scenario drills
+
+1. *A SaaS provider is breached through a misconfigured customer access role that exposed the
+   customer's data.* Under the shared responsibility model, whose failure is this? → The
+   **customer's** — IAM/configuration of what you put *in* the cloud is always the customer's
+   responsibility, even in SaaS.
+2. *Design requirement: a public web server must be reachable from the internet, but the internal
+   database segment must be unreachable from outside.* Which architecture? → A **screened subnet
+   (DMZ)** between two firewalls, with the DB on an internal segment and no inbound path to it.
+3. *The business says "we can lose at most 1 hour of data and must be back within 4 hours."* Translate
+   to metrics and one design consequence. → **RPO = 1h** (→ back up at least hourly / continuous
+   replication), **RTO = 4h** (→ warm or hot site, tested restore runbook).
+4. *A factory's industrial control system must never go offline, even briefly, to apply a patch.*
+   Which CIA priority dominates and what's the mitigation when you can't patch? → **Availability**
+   leads in OT/ICS; use **network segmentation + compensating controls** and scheduled maintenance
+   windows rather than ad-hoc patching.
+5. *An attacker breaks out of a guest VM and gains code execution on the hypervisor host.* Name the
+   attack and the architectural defence. → **VM escape**; defence is hypervisor patching, minimising
+   host attack surface, and strong **tenant isolation** (don't co-locate sensitive workloads).
+6. *Ransomware encrypts the production fileserver and the most recent backup because the backup share
+   was writable.* Which single backup property would have saved them? → **Immutability** (WORM /
+   offline air-gapped copy) — the "1" offsite + immutable leg of 3-2-1.
 - RTO vs RPO — which drives backup frequency?

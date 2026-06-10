@@ -245,3 +245,31 @@ and executive team. "CVSS 9.8" means nothing to a CFO; "risk of £X loss within 
 - KRI vs KPI — which is a leading indicator of rising risk?
 - Why does an SBOM matter for supply-chain risk?
 - Crypto-erase vs degaussing — which works on SSDs and why?
+
+### Scenario drills
+
+1. *A risk is assessed; rather than fixing the root cause, the firm buys cyber-insurance to cover the
+   potential loss.* Which risk-treatment strategy, and what residual exposure remains? →
+   **Transference**; insurance covers financial loss but **not** reputational damage or the
+   operational disruption — and won't pay out if controls were negligent.
+2. *Control costs £30K/yr. The risk it addresses has AV £200K, EF 0.30, ARO 0.25.* Is the control
+   justified on ALE alone? → SLE = 200K × 0.30 = **£60K**; ALE = 60K × 0.25 = **£15K/yr**. The control
+   costs more (£30K) than the annual expected loss (£15K) → **not justified on ALE alone** (unless it
+   addresses other risks or a regulatory requirement).
+3. *Two companies want a non-binding statement of intent to collaborate before signing anything
+   enforceable.* Which document? → **MOU** (Memorandum of Understanding). A contract/SLA/BPA would be
+   binding.
+4. *A personal-data breach is confirmed at 09:00 Monday.* Under GDPR, what's the reporting deadline
+   and to whom? → Notify the **supervisory authority within 72 hours**; notify affected **data
+   subjects without undue delay** if high risk to their rights.
+5. *A vendor supplying a critical software component is acquired by an unknown parent and stops
+   publishing security updates.* Which program area addresses this and what artefact helps? →
+   **Third-party / supply-chain risk management**; an **SBOM** lets you find every place that
+   component is used so you can assess and compensate.
+6. *The board asks "are we getting riskier?" before any incident has occurred.* Which metric type
+   answers that, and how does it differ from the other? → A **KRI (Key Risk Indicator)** — a *leading*
+   indicator of rising risk (e.g. rising unpatched-host count); a **KPI** measures performance against
+   a goal (often *lagging*).
+7. *An auditor must give external customers assurance that a SaaS provider's controls operated
+   effectively over the past year.* Which report? → **SOC 2 Type II** (effectiveness *over a period*),
+   as opposed to Type I (design *at a point in time*).
