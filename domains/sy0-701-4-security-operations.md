@@ -410,3 +410,175 @@ When investigating, know which log answers which question:
 6. *You must confirm whether a flagged host actually beaconed to a C2 domain.* Which two log sources
    answer this most directly? → **DNS/proxy logs** (resolution of the malicious domain) and
    **NetFlow/firewall logs** (the outbound connection pattern).
+
+---
+
+## Quick reference card — Domain 4
+
+One-page revision sheet. If any line is not instant recall, re-read that section above.
+
+**Acronyms:**
+SIEM/SOAR (event management / orchestration & automated response) · UEBA (user & entity behaviour
+analytics) · EDR/XDR/EPP (endpoint detection / extended / protection platform) · FIM (file
+integrity monitoring) · DLP (data loss prevention) · NAC (network access control) · PAM/JIT
+(privileged access management / just-in-time) · KDC/TGT (Kerberos key distribution centre /
+ticket-granting ticket) · SAML/OAuth/OIDC (web SSO / delegated authz / authn on OAuth) ·
+SPF/DKIM/DMARC (sender policy / signed mail / failure policy) · SEG (secure email gateway) ·
+MTTP (mean time to patch) · pcap (packet capture)
+
+**Key term one-liners:**
+- SIEM detects and alerts; SOAR executes playbooks on top. NTP underpins both correlation and
+  Kerberos (>5 min skew breaks auth).
+- AAA protocols: RADIUS (UDP, encrypts password only) vs TACACS+ (TCP, encrypts all — device
+  admin); 802.1X/EAP-TLS for port-based admission; NAC posture-checks before granting access.
+- Access models: DAC (owner decides) · MAC (labels/clearances) · RBAC (roles) · ABAC (attributes/
+  context) · rule-based (global ACLs).
+- PAM stack: vaulting → JIT elevation → session recording → credential rotation.
+- IR lifecycle (NIST 800-61): Preparation → Detection → Containment → Eradication → Recovery →
+  Lessons Learned.
+- Forensics: order of volatility (registers → RAM → swap → disk → remote logs → archives);
+  write blockers; hash before/after imaging; chain of custody.
+- Triage: TP (respond) · FP (tune) · TN (normal) · **FN (the dangerous one — missed attack)**.
+  Workflow: triage → validate → contain → escalate/close → tune.
+- Email auth: SPF (authorised senders) · DKIM (signed, unaltered) · DMARC (policy on failure +
+  alignment + reports).
+- Sanitisation: overwrite (reuse) · crypto-erase (FDE/SED, fast) · degauss (magnetic only) ·
+  destroy (highest assurance) — plus certification of destruction.
+- Detection styles: signature (precise, blind to novel) · anomaly/behavioural (novel, noisy) ·
+  heuristic — layered in practice.
+
+**Exam traps:**
+- OAuth is authorisation; OpenID Connect adds authentication. Don't accept "log in with OAuth".
+- Password + PIN is one factor (both knowledge).
+- Validate before you contain — acting on an unvalidated alert causes self-inflicted outages.
+- Disable (don't delete) accounts on offboarding — preserve the audit trail.
+- IDS alerts out-of-band; IPS sits inline and blocks. Only inline devices can drop traffic.
+- A SIEM retention window shorter than your dwell time means the evidence is gone when you need it.
+
+---
+
+## Scenario bank — situation → action
+
+Ten decision-format questions, distinct from the drills above and from
+[soc-scenarios](../scenarios/soc-scenarios.md). Format: situation → what do you do? → correct
+action → why → portfolio link.
+
+**1. Monday-morning lockout**
+- **Situation:** After a weekend hypervisor migration, every user fails Windows authentication.
+  Domain controllers are up; passwords are correct; tickets mention "clock" errors.
+- **What do you do?** Find the common cause.
+- **Correct action:** Check **time synchronisation** — the migrated VMs' clocks drifted past
+  Kerberos's 5-minute skew tolerance. Re-point NTP, resync, and add clock-drift monitoring.
+- **Why:** Kerberos timestamps tickets to stop replay; skew breaks all authentication at once.
+  Time is also the silent dependency of every SIEM correlation you run.
+- **Portfolio link:** [spectre](../../spectre)'s evidence chain depends on the same property —
+  timestamps you can defend.
+
+**2. The meeting-room socket**
+- **Situation:** A visitor plugs a personal laptop into a meeting-room ethernet port and receives
+  a corporate IP with reach to internal file shares.
+- **What do you do?** Close the admission gap.
+- **Correct action:** Deploy **NAC with 802.1X**: unauthenticated/non-compliant devices get
+  quarantined to a guest VLAN after posture checks (certificate, patch level, EDR present);
+  unused ports default-disabled.
+- **Why:** A network that hands full access to any cable is one walk-in away from compromise.
+  Admission control moves the decision from "got a socket" to "proved identity and posture".
+- **Portfolio link:** [nullbyte](../../nullbyte)'s isolation matrix applies the same gate per
+  profile: network access is granted by policy, never by default.
+
+**3. The account that outlived the employee**
+- **Situation:** Reviewing VPN logs, you find successful logins from an account belonging to a
+  developer who left **two weeks ago**.
+- **What do you do?** Respond and fix the process.
+- **Correct action:** Disable the account and kill its sessions now, then investigate everything
+  it did since the leave date (treat as compromise until proven otherwise). Root-cause the
+  offboarding failure: same-day deprovisioning, leaver checklists, periodic access recertification.
+- **Why:** Orphaned accounts are valid credentials with no owner watching them — indistinguishable
+  from an attacker by design. The control is lifecycle discipline, not detection cleverness.
+- **Portfolio link:** [nullbyte](../../nullbyte) treats identity lifecycle explicitly — profiles
+  exist, get locked, and die as deliberate acts, never by drift.
+
+**4. "This app would like to read your mail"**
+- **Situation:** A user reports they "logged in with Microsoft" on a productivity site; you find an
+  OAuth grant from their account to an unknown app with `Mail.Read` and `offline_access` scopes.
+- **What do you do?** Respond to the consent, not the password.
+- **Correct action:** Revoke the application grant and its refresh tokens (resetting the password
+  alone does NOT cut token access), audit what the app read, then restrict user consent to
+  verified publishers/admin approval.
+- **Why:** **Illicit consent** phishing steals authorisation, not credentials — MFA never fires
+  because the user genuinely authenticated. The token, not the password, is the loot.
+- **Portfolio link:** [mirage](../../mirage)'s core finding applies: the attack works by making a
+  *legitimate mechanism* serve the attacker — surface signals look clean.
+
+**5. Twenty-four standing admins**
+- **Situation:** An audit finds 24 accounts hold standing Domain Admin; most "needed it once" for
+  a migration years ago. Each is a permanent pass-the-hash target.
+- **What do you do?** Redesign privileged access.
+- **Correct action:** Introduce **PAM**: vault the credentials, grant **JIT elevation** scoped and
+  time-boxed per task, record privileged sessions, rotate secrets on check-in, and cut standing
+  membership to the minimum that genuinely needs it.
+- **Why:** Privilege that exists only while used cannot be stolen while dormant — the attacker's
+  window shrinks from "always" to "minutes, logged".
+- **Portfolio link:** [ironveil](../../ironveil)'s touch-to-unlock FIDO2 key is JIT in hardware:
+  the privilege (disk unlock) exists only at the moment of physical presence.
+
+**6. The CFO's laptop, mid-board-meeting**
+- **Situation:** EDR raises a *medium-confidence* alert on the CFO's laptop during a board meeting.
+  Auto-isolate would kill their presentation; ignoring it might let something spread.
+- **What do you do?** Balance containment against business impact.
+- **Correct action:** **Validate first** (process tree, network destinations, hash reputation —
+  minutes of work), apply *targeted* containment meanwhile (block the suspect domain/hash
+  estate-wide), and isolate the host the moment validation says real — with an executive
+  communication path, not silently.
+- **Why:** Containment is a judgement call on confidence × impact. Reflex isolation on every
+  medium alert trains the business to fight the SOC; reflex inaction trains attackers to time
+  their moves to board meetings.
+- **Portfolio link:** [scenarios/soc-scenarios.md](../scenarios/soc-scenarios.md) drills this
+  shift principle throughout: validate → contain → investigate, in that order.
+
+**7. The trail that expired**
+- **Situation:** An intrusion is confirmed; initial access traced to roughly five months ago. Your
+  SIEM retains 30 days. The earlier evidence no longer exists.
+- **What do you do?** Fix retention as a control, not a setting.
+- **Correct action:** Set retention against *dwell-time reality and compliance needs* (commonly
+  12+ months for security-relevant logs), tier storage (hot 30–90 days, cold/archive beyond),
+  and protect archives with WORM/immutability.
+- **Why:** Median dwell times exceed 30 days; a retention window shorter than dwell time means
+  every serious investigation starts with destroyed evidence.
+- **Portfolio link:** [spectre](../../spectre) retained hash-verified logs of every session
+  precisely so later questions could still be answered.
+
+**8. `/etc/passwd` changed at 03:12**
+- **Situation:** FIM alerts: `/etc/passwd` modified at 03:12, outside any change window. A new
+  UID-0 account `sysupd` exists.
+- **What do you do?** Run the alert down.
+- **Correct action:** Treat as **persistence via account creation** (true positive until proven
+  otherwise): isolate, snapshot evidence, check auth logs for what session made the change and
+  how it got in, hunt the same artefact on other hosts, then eradicate and reset credentials.
+- **Why:** A second root account is a classic post-exploitation move — the FIM alert is the
+  tripwire; correlation (who, from where, after what) is the investigation.
+- **Portfolio link:** [gauntlet](../../gauntlet)'s privilege-escalation writeups document exactly
+  why attackers want that file — and what the artefacts look like from the attacker's side.
+
+**9. Servers going back to the lessor**
+- **Situation:** Forty leased servers with regulated data are being returned. Finance wants them
+  shipped Friday; the drives are self-encrypting.
+- **What do you do?** Sanitise with proof.
+- **Correct action:** **Crypto-erase** the self-encrypting drives (destroy the keys), verify, and
+  obtain/produce a **certificate of destruction/sanitisation** per device before they leave custody.
+- **Why:** Crypto-erase is fast and sound for SED/FDE media; the certificate is what compliance
+  and the next audit actually ask for. Chain of custody ends with paper, not hope.
+- **Portfolio link:** [ironveil](../../ironveil)'s LUKS2 design makes the same move available —
+  destroying one key renders the disk's ciphertext permanently unreadable.
+
+**10. The phish that beat the sandbox**
+- **Situation:** Attachment sandboxing is on, yet credential-phishing mail still lands: plain
+  HTML attachments and links to pages that turn malicious *after* delivery.
+- **What do you do?** Layer the email defences.
+- **Correct action:** Enable **URL rewriting with time-of-click detonation**, external-sender
+  banners, and an easy report-phish button feeding SOC triage; pair with phishing-resistant MFA
+  so harvested passwords are worth less.
+- **Why:** Attackers weaponise content after the gateway scan — time-of-click checks re-decide at
+  the moment that matters, and FIDO2 caps the damage when a user is still fooled.
+- **Portfolio link:** [mirage](../../mirage)'s 88,647-email corpus is the scale of what gateways
+  face — and its causal findings explain why surface filtering alone keeps losing.
