@@ -247,6 +247,7 @@ for transfers outside the EU/EEA).
 - Why does OT/ICS prioritise availability over confidentiality?
 - 3-2-1 rule — what do each of the three numbers mean?
 - Full vs incremental vs differential backup — which is fastest to back up? Which is fastest to restore?
+- RTO vs RPO — which drives backup frequency?
 
 ### Scenario drills
 
@@ -270,4 +271,169 @@ for transfers outside the EU/EEA).
 6. *Ransomware encrypts the production fileserver and the most recent backup because the backup share
    was writable.* Which single backup property would have saved them? → **Immutability** (WORM /
    offline air-gapped copy) — the "1" offsite + immutable leg of 3-2-1.
-- RTO vs RPO — which drives backup frequency?
+
+---
+
+## Quick reference card — Domain 3
+
+One-page revision sheet. If any line is not instant recall, re-read that section above.
+
+**Acronyms:**
+IaaS/PaaS/SaaS (infrastructure / platform / software as a service) · CASB/CSPM/CWPP (cloud access
+broker / posture management / workload protection) · SASE (secure access service edge) · VPC/NSG
+(virtual private cloud / network security group) · DMZ (screened subnet) · SDN (software-defined
+networking) · DNSSEC/DoH/DoT (DNS integrity / over HTTPS / over TLS) · TEE (trusted execution
+environment) · RAID (redundant array of independent disks) · RTO/RPO/MTD (recovery time / point
+objective, maximum tolerable downtime) · MTBF/MTTR (mean time between failures / to repair) ·
+WORM (write once read many) · ICS/SCADA/OT (industrial control / supervisory control / operational
+technology)
+
+**Key term one-liners:**
+- Shared responsibility: the customer **always** owns data + IAM, in every service model.
+- CASB = visibility/policy over cloud *app usage* · CSPM = finds cloud *misconfigurations* ·
+  CWPP = protects *workloads*.
+- Segmentation ladder: VLAN → DMZ/screened subnet → microsegmentation → air gap.
+  East-west = lateral inside; north-south = in/out.
+- VPN: site-to-site (network↔network) vs remote-access (user→network); split tunnel (some
+  traffic) vs full tunnel (all traffic — DNS-leak safe).
+- DNSSEC = authenticity/integrity (NOT confidentiality) · DoH/DoT = query confidentiality.
+- Type 1 hypervisor = bare metal (ESXi, KVM) · Type 2 = on a host OS (VirtualBox).
+- VM escape = guest→host break (attack) · VM sprawl = unmanaged VM growth (hygiene).
+- Data states: at rest (FDE) · in transit (TLS/VPN) · in use (TEE/enclave).
+- Backups: full (slow backup, fast restore) · incremental (fast backup, slow chained restore) ·
+  differential (middle) · 3-2-1 = 3 copies, 2 media, 1 offsite · immutable/WORM beats ransomware.
+- DR sites: hot (minutes, costly) · warm (hours) · cold (days, cheap).
+- RAID: 0 stripe (none) · 1 mirror · 5 single-parity (3 disks) · 6 dual-parity (4) · 10 mirror+stripe.
+
+**Exam traps:**
+- A SaaS breach via customer IAM misconfiguration is the **customer's** failure.
+- DNSSEC does not encrypt anything — integrity only.
+- Degaussing does not work on SSDs/flash.
+- RPO drives backup *frequency*; RTO drives recovery *architecture*.
+- OT/ICS: availability and safety lead — compensating controls, not forced patching.
+- Snapshots are not backups (same storage, same failure domain).
+
+---
+
+## Scenario bank — situation → action
+
+Ten decision-format questions, distinct from the drills above and from
+[soc-scenarios](../scenarios/soc-scenarios.md). Format: situation → what do you do? → correct
+action → why → portfolio link.
+
+**1. Forty unknown SaaS apps**
+- **Situation:** A network review finds staff using ~40 unsanctioned SaaS tools — file converters,
+  note apps, AI assistants — some receiving pasted internal data. Nobody approved any of them.
+- **What do you do?** Pick the control class for shadow IT.
+- **Correct action:** Deploy a **CASB** for visibility and policy over cloud app usage (discover,
+  risk-rate, sanction/block, apply DLP to the sanctioned set) — paired with a usable approved-tools
+  catalogue.
+- **Why:** Shadow IT is a visibility problem before it is a blocking problem; you cannot govern
+  usage you cannot see, and pure blocking just drives usage to personal devices.
+- **Portfolio link:** [ironveil](../../ironveil)'s AdGuard + WireGuard egress stack is the
+  self-hosted miniature of this: every outbound flow passes one observable, policy-enforcing point.
+
+**2. The leaking tunnel**
+- **Situation:** Remote workers use split-tunnel VPN. A compliance review finds their DNS queries
+  and SaaS traffic go straight to their home ISPs — invisible to corporate monitoring and filtering.
+- **What do you do?** Decide the tunnel architecture.
+- **Correct action:** Move regulated roles to **full tunnel** (or SASE) so all traffic — including
+  DNS — egresses through corporate inspection and filtering; accept the bandwidth cost.
+- **Why:** Split tunnelling trades visibility for performance. If policy says "we inspect and
+  filter", traffic that bypasses the tunnel makes the policy fiction.
+- **Portfolio link:** [ironveil](../../ironveil) routes DNS through AdGuard Home and then the
+  WireGuard tunnel — the no-leak pattern at single-host scale.
+
+**3. Hostile tenants**
+- **Situation:** A platform team wants to run untrusted third-party code in containers on the same
+  Kubernetes nodes as the payment service, because "containers isolate things".
+- **What do you do?** Choose the isolation boundary.
+- **Correct action:** Untrusted workloads get **VM-level isolation** (or dedicated nodes/separate
+  cluster) — containers share the host kernel, so a kernel exploit crosses every container on the
+  node.
+- **Why:** Isolation strength must match trust level: namespaces/cgroups are a management
+  boundary; a hypervisor is a security boundary.
+- **Portfolio link:** [nullbyte](../../nullbyte) makes the same call at device scale — nine fully
+  separate encrypted profiles rather than one profile with "separated" apps.
+
+**4. Authentic vs private answers**
+- **Situation:** Two requirements land the same week: "DNS answers must be tamper-proof so we
+  can't be redirected" and "DNS queries must not be readable by the coffee-shop network".
+- **What do you do?** Map each requirement to its protocol.
+- **Correct action:** Tamper-proof answers → **DNSSEC** (signed records, integrity). Private
+  queries → **DoH or DoT** (encrypted transport). They compose; neither replaces the other.
+- **Why:** DNSSEC authenticates the answer but transmits in clear; DoH/DoT hides the question but
+  doesn't validate the answer's origin. The exam loves swapping these.
+- **Portfolio link:** [nullbyte](../../nullbyte) runs RethinkDNS with encrypted DNS — the
+  query-confidentiality half of this pair, chosen for hostile-network conditions.
+
+**5. The auditor's third state**
+- **Situation:** An auditor accepts your encryption at rest (LUKS2) and in transit (TLS 1.3), then
+  asks: "and while the data is being processed?"
+- **What do you do?** Answer for data in use.
+- **Correct action:** Name the mechanisms honestly: **TEE / secure enclave / confidential
+  computing** protect data during processing; where unavailable, compensate with host hardening,
+  memory-access controls, and minimising how long secrets exist in memory.
+- **Why:** Data in use is the third state and the least mature — credentials and keys live in RAM,
+  which is why memory forensics and cold-boot attacks work.
+- **Portfolio link:** [nullbyte](../../nullbyte)'s Titan M2 keeps key operations inside a hardware
+  element — secrets are *used* where the OS cannot read them.
+
+**6. Three copies, one roof**
+- **Situation:** The backup design: production data, a NAS replica in the same rack, and a second
+  copy on a USB drive in the same room. The team reports "3-2-1 compliant".
+- **What do you do?** Audit the claim.
+- **Correct action:** Fail it: 3 copies ✓, 2 media (arguably) ✓, **1 offsite ✗** — a fire, flood,
+  or burglary takes all three. Add an offsite (and ideally immutable) leg.
+- **Why:** The "1" exists for site-level events. Copies that share a failure domain are one copy
+  for disaster purposes.
+- **Portfolio link:** [ironveil](../../ironveil) stores its backup LUKS key offline and separately
+  from the machine — the same separate-failure-domain rule applied to key material.
+
+**7. Straight to production**
+- **Situation:** Admins RDP/SSH to production servers directly from the same laptops they use for
+  email and browsing. One phished admin workstation would touch everything.
+- **What do you do?** Re-architect the admin path.
+- **Correct action:** Force administrative access through a hardened **jump box / bastion** (MFA,
+  no internet browsing, logged/recorded sessions), reachable only from defined sources, with
+  direct admin ports closed to everything else.
+- **Why:** A bastion shrinks the admin attack surface to one auditable, hardened chokepoint —
+  the email-and-browsing laptop stops being a path to prod.
+- **Portfolio link:** [ironveil](../../ironveil)'s dracut-sshd pre-boot unlock is a single hardened
+  entry path with a pinned key — same chokepoint discipline, applied to the riskiest access there is.
+
+**8. Somewhere to detonate**
+- **Situation:** The team wants to analyse suspicious files and CTF malware samples. Current plan:
+  a VM on an analyst's daily workstation, which has the corporate VPN connected.
+- **What do you do?** Specify the lab isolation.
+- **Correct action:** Build an **isolated lab** — dedicated host or network segment with no path
+  to production or the VPN, snapshot-based resets, and explicit (default-deny) egress. Air gap if
+  samples warrant it.
+- **Why:** Sandbox escapes and fat-fingered detonations are survivable only when the blast radius
+  is a lab. "VM on my workstation" makes the workstation the perimeter.
+- **Portfolio link:** [gauntlet](../../gauntlet) practice runs in disposable, isolated platform
+  VMs (TryHackMe/HackTheBox) — hostile code never shares a boundary with real data.
+
+**9. The smart building moves in**
+- **Situation:** Facilities connects 60 IP cameras, door controllers, and TV panels to the office
+  LAN. Default admin passwords, vendor firmware last updated three years ago.
+- **What do you do?** Contain the IoT estate.
+- **Correct action:** Move IoT to its **own VLAN(s)** with default-deny routing to corporate
+  segments, change every default credential, inventory the devices, and monitor their (highly
+  predictable) traffic for anomalies.
+- **Why:** IoT devices are rarely patchable and often pre-compromised by design (default creds);
+  network-level controls must do the work that device-level controls can't.
+- **Portfolio link:** [nullbyte](../../nullbyte)'s per-app network policy is the same logic:
+  untrusted endpoints get the minimum network they need, not the network you happen to have.
+
+**10. "We'll just roll back the snapshot"**
+- **Situation:** A team's ransomware recovery plan is VM snapshots: "we snapshot nightly; if we're
+  hit, we roll back." Snapshots live on the same storage array as the VMs.
+- **What do you do?** Stress-test the plan.
+- **Correct action:** Reject snapshots-as-backups: same storage = same failure domain (array
+  failure, ransomware that targets the hypervisor/storage layer). Require real backups — separate
+  system, offsite copy, immutability, and a tested restore.
+- **Why:** A snapshot is a rollback convenience inside the system you're trying to protect. If
+  the attacker (or the array) takes the storage, the "backups" go with it.
+- **Portfolio link:** [ironveil](../../ironveil)'s initramfs backout plan is explicitly a rollback,
+  not a backup — the distinction this plan missed.
