@@ -18,7 +18,7 @@ security), mirage (causal LLM phishing research), gauntlet (CTF methodology).
 | 1.2 Zero Trust / least privilege boundaries | D1/D4 | Nine independently-encrypted profiles; key exists only where needed (Façade) | nullbyte |
 | 1.2 Deception & disruption technology | D1 | (concept) honeytokens — seen in exam-01 Q5; no live honeypot yet | — |
 | 1.4 PKI / certificates / key storage | D1 | FIDO2 credential in hardware (Nitrokey 3A NFC), touch-only, no clientPin | ironveil |
-| 1.4 Hardware root of trust / attestation | D1/D3 | Titan M2 verified boot chain, bootloader relocked | nullbyte |
+| 1.4 Hardware root of trust / attestation | D1/D3 | Titan M2 (+ Trusty TEE + Tensor G5 security core) verified-boot chain, bootloader relocked, boot key hash confirmed (`6836b3c5…`) | nullbyte |
 | 2.2 Attack types — directory listing exposure | D2 | CWE-548 primary finding (web root indexing) | spectre |
 | 2.2 Service/version disclosure recon | D2 | nmap -sS -sV -O banner disclosure (CWE-200) | spectre |
 | 2.3 Vulnerability types — misconfiguration, least-privilege violation | D2 | sudo over-privilege (CWE-250), missing security headers | spectre |
@@ -27,13 +27,13 @@ security), mirage (causal LLM phishing research), gauntlet (CTF methodology).
 | 2.4 Social-engineering mechanisms (urgency/authority/trust) | D2 | Five validated causal constructs, DoWhy-refuted | mirage |
 | 2.5 Mitigations — hardening, host isolation | D2 | LUKS2 + FIDO2 + WireGuard + AdGuard defence-in-depth | ironveil |
 | 3.1 Architecture models — compartmentalisation / blast radius | D3 | Nine-profile isolation, no cross-profile state | nullbyte |
-| 3.1 Encrypted egress / secure comms | D3 | WireGuard wg-SE-RO-1, all external traffic tunnelled | ironveil |
-| 3.3 Data states — data at rest | D3 | LUKS2 Argon2id full-disk encryption, 3 keyslots | ironveil |
+| 3.1 Encrypted egress / secure comms | D3 | WireGuard `wg-CH-FI-2` + `wg-SE-FI-1`, full-tunnel routing for all external traffic | ironveil |
+| 3.3 Data states — data at rest | D3 | LUKS2 `aes-xts-plain64`/512-bit, Argon2id passphrase + 2× PBKDF2/SHA-512 FIDO2 keyslots | ironveil |
 | 3.3 Data at rest (mobile) / per-profile encryption | D3 | Per-profile keys derived from lockscreen credential | nullbyte |
 | 3.4 Resilience — key custody redundancy | D3 | NK#1 primary, NK#2 offline backup, offline passphrase | ironveil |
-| 4.1 Hardening targets — workstation baseline | D4 | Documented Fedora hardening: SELinux, services, RGB-without-daemons | ironveil |
+| 4.1 Hardening targets — workstation baseline | D4 | Fedora 44 hardening: dracut-sshd (v0.7.1-5.fc44) pre-boot SSH, service minimisation, RGB-without-vendor-daemons (SELinux status pending) | ironveil |
 | 4.1 Hardening targets — mobile (MDM-equivalent) | D4 | GrapheneOS posture: verified boot, per-app network policy (RethinkDNS) | nullbyte |
-| 4.4 Security monitoring — DNS chokepoint | D4 | AdGuard Home on loopback; all queries filtered pre-egress | ironveil |
+| 4.4 Security monitoring — DNS chokepoint | D4 | AdGuard Home (`*:53`) → Quad9 DoH over the WireGuard tunnel; all queries filtered and encrypted pre-egress | ironveil |
 | 4.4 Detection engineering from attack technique | D4 | gauntlet defender-perspective sections (Event IDs, Sigma/Splunk) | gauntlet |
 | 4.5 Email security / anti-phishing | D4 | Phishing-corpus causal analysis (channel-independent constructs) | mirage |
 | 4.6 IAM — authentication factors, phishing-resistant | D4 | FIDO2 hardware key (something-you-have + presence) | ironveil |
