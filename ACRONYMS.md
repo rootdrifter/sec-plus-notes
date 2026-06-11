@@ -66,6 +66,7 @@ trap-focused subset.
 | MTBF | Mean Time Between Failures | Reliability of repairable systems | D3 | MTTF (non-repairable) |
 | MTTD | Mean Time To Detect | Detection latency | D4 | MTTR |
 | MTTR | Mean Time To Repair/Recover | Recovery latency | D3/D4 | MTTD |
+| MSA | Master Service Agreement | Umbrella contract; standard terms for an ongoing vendor relationship | D5 | SOW (specific work under it) |
 | MTD | Maximum Tolerable Downtime | RTO must be ≤ MTD | D3 | RTO |
 | NAC | Network Access Control | Posture-checks devices before access | D4 | 802.1X (mechanism) |
 | NIDS | Network Intrusion Detection System | Detection on network traffic | D4 | HIDS |
@@ -91,6 +92,7 @@ trap-focused subset.
 | SLA | Service Level Agreement | Contracted service commitment | D5 | MOU, SOW |
 | SLE | Single Loss Expectancy | Asset Value × Exposure Factor | D5 | ALE, ARO |
 | SOAR | Security Orchestration, Automation and Response | Automated response atop SIEM | D4 | SIEM, IaC |
+| SOW | Statement of Work | Deliverables/scope/timeline for one engagement under an MSA | D5 | MSA (umbrella), SLA |
 | SPF | Sender Policy Framework | Authorised sending hosts for a domain | D4 | DKIM, DMARC |
 | SSO | Single Sign-On | One auth → many services | D4 | federation |
 | STIX | Structured Threat Information eXpression | Threat-intel data format | D2 | TAXII (transport) |

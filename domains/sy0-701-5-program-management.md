@@ -135,6 +135,14 @@ A breach at a supplier can expose your data (e.g. SolarWinds supply-chain attack
 | **BPA** (Business Partnership Agreement) | Formal terms for a business relationship |
 | **ISA** (Interconnection Security Agreement) | Governs security requirements for network interconnections |
 | **DPA** (Data Processing Agreement) | GDPR requirement; governs how a processor handles personal data |
+| **MSA** (Master Service Agreement) | Overarching contract setting standard terms for an ongoing relationship; individual work is ordered under it |
+| **SOW** (Statement of Work) | Specifies the deliverables, scope, timeline, and acceptance criteria for **one** engagement under an MSA |
+
+**MSA vs SOW — the exam trap:** the MSA is the *umbrella* (legal/commercial terms agreed once);
+each SOW hangs off it and defines *a specific piece of work*. Stem asking "which document defines
+the deliverables and timeline for this particular project?" → **SOW**. "Which sets the standing
+terms governing all future work with this vendor?" → **MSA**. Don't confuse the SLA (performance
+levels + remedies) with either — an SLA can live inside an MSA but answers a different question.
 
 **Fourth-party risk:** your vendor's vendors. If your cloud provider relies on a software component
 from a supplier you've never assessed, their breach is your exposure.
@@ -285,8 +293,9 @@ SLE/ALE/ARO/EF/AV (single & annualised loss expectancy, annual rate, exposure fa
 GRC (governance, risk, compliance) · NIST CSF/RMF (cybersecurity framework / risk management
 framework) · ISMS (information security management system, ISO 27001) · PDCA (plan-do-check-act) ·
 GDPR/DPO/DSAR (EU/UK data law, protection officer, subject access request) · SCC (standard
-contractual clauses) · SLA/NDA/MOU/BPA/ISA/DPA (service level / non-disclosure / understanding /
-partnership / interconnection / data processing agreements) · SBOM (software bill of materials) ·
+contractual clauses) · SLA/NDA/MOU/BPA/ISA/DPA/MSA/SOW (service level / non-disclosure /
+understanding / partnership / interconnection / data processing / master service / statement of
+work) · SBOM (software bill of materials) ·
 MTTD/MTTR (mean time to detect / respond) · KRI/KPI (key risk / performance indicator) ·
 AUP (acceptable use policy)
 
