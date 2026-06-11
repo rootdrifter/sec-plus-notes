@@ -56,6 +56,21 @@ implementation so revision and evidence reinforce each other.
   the last-day revision sheet), and a ten-question **scenario bank** in
   situation → what-do-you-do → correct action → why → portfolio-link format (PBQ-style judgement).
 
+## Exam preparation toolkit
+
+| File | Purpose |
+|------|---------|
+| [EXAM_READINESS.md](EXAM_READINESS.md) | Honest per-domain coverage matrix + recommended focus hours |
+| [STUDY_SCHEDULE.md](STUDY_SCHEDULE.md) | Six-week spaced-repetition plan to exam day, with a readiness gate |
+| [PORTFOLIO_MAP.md](PORTFOLIO_MAP.md) | Every objective with direct portfolio evidence (study + interview) |
+| [ACRONYMS.md](ACRONYMS.md) | A–Z acronym reference with definitions, domain, and confused-with pairs |
+| [practice-exams/exam-01.md](practice-exams/exam-01.md) | 90-question weighted mock + answer key |
+| [practice-exams/exam-03.md](practice-exams/exam-03.md) | 40 scenario-only questions (harder; 15 portfolio-linked) |
+| [practice-exams/run-exam.sh](practice-exams/run-exam.sh) | Timed runner — presents questions, scores by domain |
+| [practice-exams/error-log.md](practice-exams/error-log.md) | Track misses → find patterns → redrill the pattern |
+| [practice-questions.md](practice-questions.md) | 50-item weighted question bank |
+| [scenarios/soc-scenarios.md](scenarios/soc-scenarios.md) | SOC shift scenarios (Domain 4 reinforcement) |
+
 ## Supplementary — classic six-area notes
 
 The files below pre-date the SY0-701 reorganisation and use the classic six knowledge areas. The
