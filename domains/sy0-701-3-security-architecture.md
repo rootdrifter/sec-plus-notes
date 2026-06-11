@@ -124,6 +124,42 @@ risk in dependencies; timeout/execution environment risks.
 - Container security: image vulnerability scanning, immutable images, least-privilege, no root in
   containers, network policy (Kubernetes NetworkPolicy), secrets management (never in env vars).
 
+### Infrastructure as Code, serverless, and microservices (objective 3.1)
+
+**Infrastructure as Code (IaC).**
+- *Definition:* infrastructure (networks, VMs, firewall rules, identities) defined in declarative
+  template files (Terraform, CloudFormation, Ansible) and deployed by automation rather than
+  configured by hand.
+- *How it works:* the template is the source of truth — version-controlled, peer-reviewed,
+  redeployable; drift detection compares running state against the template.
+- *Where it appears on the exam:* "consistent, auditable, repeatable deployments" or "config drift"
+  in the stem → IaC is the answer; also as the fix for snowflake-server misconfiguration.
+- *Commonly confused with:* simple shell-script provisioning (imperative, no declared end state,
+  no drift detection) and SOAR (which automates *security response*, not infrastructure builds).
+- *Exam trap:* IaC does **not** eliminate misconfiguration — it **scales** whatever is written.
+  One bad template replicates the flaw to every deployment; secrets hard-coded in templates are a
+  classic finding. The control for that is template scanning + secrets management, not "use IaC".
+
+**Serverless** (see cloud models above for the responsibility split).
+- Customer secures code, data, and function permissions only; there is no customer-patchable OS.
+- Risks: over-permissive function roles, event-data injection, provider lock-in.
+- *Exam trap:* "serverless" still runs on servers — the *provider* patches them; answers that have
+  the customer patching the serverless OS are wrong.
+
+**Microservices.**
+- *Definition:* an application decomposed into small, independently deployable services
+  communicating over APIs — versus a monolith deployed as one unit.
+- *Security implications:* many more network paths (east-west traffic) to authenticate and
+  monitor; per-service least privilege; API gateways and mutual TLS between services; one
+  compromised service must not imply trust everywhere (zero-trust fits naturally).
+- *Where it appears:* stems about "securing service-to-service communication" (→ mTLS / API
+  gateway) or "limiting blast radius of one compromised component".
+- *Exam trap:* microservices **increase** the internal attack surface (more endpoints, more
+  credentials) — they improve resilience and deployability, not inherent security.
+- *Portfolio connection:* the nullbyte nine-profile architecture applies the same blast-radius
+  principle at the device level — independent trust boundaries so one compromise does not
+  propagate.
+
 ---
 
 ## 4. IoT, OT/ICS and embedded systems
