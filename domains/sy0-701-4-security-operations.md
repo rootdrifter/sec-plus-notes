@@ -371,6 +371,69 @@ When investigating, know which log answers which question:
 
 ---
 
+## 13. Hardening targets — mobile, wireless, application (objective 4.1)
+
+### Mobile solutions
+
+**Deployment models — know the trade-off each makes:**
+
+| Model | Who owns | Who controls | Exam cue |
+|-------|----------|--------------|----------|
+| **BYOD** (bring your own) | User | Org controls a managed container/profile only | Cheapest, weakest control; privacy tension — org must not wipe personal data |
+| **COPE** (corporate-owned, personally enabled) | Org | Org controls the device; personal use allowed | Full MDM control + user convenience |
+| **CYOD** (choose your own) | Org | Org controls; user picks from an approved list | Compromise between BYOD flexibility and COPE control |
+
+**MDM capabilities** (the *mechanism* behind every mobile-hardening answer): enforce
+encryption + lockscreen policy, remote wipe (full or container-only on BYOD), application
+allow/deny lists, geofencing/geolocation, jailbreak/root posture checks, OS-version compliance
+gates, certificate deployment.
+
+- *Commonly confused:* **containerisation** (separating work data inside one device) vs
+  **segmentation** (network-level separation). On a BYOD stem, container wipe is the answer that
+  respects personal data.
+- *Connection methods as attack surface:* cellular (rogue base station), Wi-Fi (evil twin —
+  cross-ref Domain 2 wireless attacks), Bluetooth (bluesnarfing/bluejacking), NFC (proximity
+  reads). Hardening = disable unused radios, no auto-join.
+- *Exam trap:* "sideloading" and "jailbreaking/rooting" stems → the control is MDM posture
+  checking + app allowlisting, not antivirus.
+- *Portfolio connection:* nullbyte is a worked mobile-hardening build — per-profile encryption,
+  verified boot, per-app network policy (RethinkDNS) are the GrapheneOS equivalents of the
+  MDM control set, applied at OS level.
+
+### Wireless security settings
+
+- **WPA3-Personal (SAE):** replaces the WPA2 4-way-handshake PSK exchange with Simultaneous
+  Authentication of Equals — resistant to **offline dictionary attacks** (each guess requires a
+  live exchange) and provides forward secrecy. Protected Management Frames (PMF) are mandatory —
+  blunts deauthentication attacks.
+- **WPA3-Enterprise / WPA2-Enterprise:** authentication via **802.1X → RADIUS → EAP** (cross-ref
+  §2 core protocols). EAP-TLS (certificate both sides) is the phishing-resistant gold standard;
+  PEAP/EAP-TTLS tunnel a legacy credential.
+- **Personal vs Enterprise in one line:** Personal = shared secret (PSK/SAE password); Enterprise
+  = per-user authentication against an AAA server.
+- Hardening checklist: WPA3 (or WPA2+AES minimum), disable WPS, disable open/WEP, unique
+  pre-shared secrets, PMF on, RADIUS for anything corporate.
+- *Exam trap:* a stem where the Wi-Fi password was cracked "from a captured handshake, offline" →
+  WPA2-PSK weakness; the fix is **WPA3-SAE**, not a longer passphrase (a longer passphrase only
+  raises cost, SAE removes the offline vector).
+
+### Application security (hardening side — attack side lives in Domain 2 §5)
+
+- **Input validation** (server-side, allow-list) — the single control that kills injection
+  classes.
+- **Secure cookies:** `Secure` (TLS only), `HttpOnly` (no script access — blunts XSS session
+  theft), `SameSite` (CSRF mitigation).
+- **Code signing:** integrity + publisher authenticity for shipped binaries/updates (supply-chain
+  stems).
+- **Static vs dynamic analysis:** SAST reads source before run; DAST probes the running app —
+  stems with "without access to source code" → DAST.
+- **Sandboxing:** execute untrusted code in an isolated environment (browser tabs, mobile apps,
+  detonation chambers).
+- *Exam trap:* "client-side validation" is never the correct *security* control — it is a UX
+  feature; the server must re-validate.
+
+---
+
 ### Quick self-test
 - NTP: why is it critical for a SIEM and for Kerberos?
 - SIEM vs SOAR — what does each do?
