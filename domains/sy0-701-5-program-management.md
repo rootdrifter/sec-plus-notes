@@ -314,6 +314,52 @@ and executive team. "CVSS 9.8" means nothing to a CFO; "risk of £X loss within 
 
 ---
 
+## 10. Applied drills (exam-coach pass — work the numbers)
+
+### Quantitative risk — worked ALE drill
+
+> *A datacentre holds assets worth £2,000,000. A flood would destroy an estimated 25%. Flood records
+> suggest one event every 20 years. A £40,000/yr flood-mitigation control cuts the ARO to 1-in-50.
+> Is it worth it?*
+
+1. **SLE** = AV × EF = £2,000,000 × 0.25 = **£500,000** (loss per single event)
+2. **ARO** (before) = 1/20 = **0.05**
+3. **ALE** (before) = SLE × ARO = £500,000 × 0.05 = **£25,000/yr**
+4. **ALE** (after) = £500,000 × (1/50 = 0.02) = **£10,000/yr**
+5. **Value of control** = ALE_before − ALE_after = £25,000 − £10,000 = **£15,000/yr** of avoided loss
+
+**Decision:** the control costs £40,000/yr but only avoids £15,000/yr → **not cost-justified** on
+ALE alone. Exam trap: candidates compute ALE correctly then forget to compare it to the *cost of the
+control* (the whole point). Cost of control should be **less than** the reduction in ALE.
+
+### Recovery & reliability metrics — don't confuse them
+
+| Metric | Question it answers | Worked example |
+|--------|--------------------|----------------|
+| **RPO** (Recovery Point Objective) | How much **data** can we lose? (backward from incident) | RPO 1h → back up at least hourly |
+| **RTO** (Recovery Time Objective) | How long until the service is **back**? (forward from incident) | RTO 4h → must restore within 4h |
+| **MTTD** (Mean Time to Detect) | How long before we **notice**? | SIEM tuning lowers MTTD |
+| **MTTR** (Mean Time to Respond/Repair) | How long to **fix** once detected? | playbooks + SOAR lower MTTR |
+| **MTBF** (Mean Time Between Failures) | How **reliable** is the component? (repairable) | higher = more reliable |
+| **MTTF** (Mean Time To Failure) | Lifespan of a **non-repairable** component | disk rated MTTF |
+
+> Memory hook: **RP**O = **P**oint in the past (data); **RT**O = **T**ime to recover (service).
+> MTB**F**/MTT**F** describe hardware reliability; MTT**D**/MTT**R** describe the SOC's speed.
+
+### Compliance frameworks — the one requirement each is known for
+
+| Framework | Scope | Headline requirements (exam-level) |
+|-----------|-------|-----------------------------------|
+| **GDPR** | EU personal data | lawful basis, data-subject rights, **72-hour breach notification**, DPO, privacy-by-design, transfer rules |
+| **PCI-DSS** | Payment card data | don't store CVV, encrypt PAN, segment the CDE, quarterly scans, 12 requirements (contractual, not law) |
+| **HIPAA** | US healthcare (PHI) | Privacy + Security Rules, safeguards (admin/physical/technical), breach notification |
+| **SOX** | US public-company financials | integrity of financial reporting, access controls + audit trails over financial systems |
+
+> Exam trap: **PCI-DSS is a contractual standard, not a law**; **GDPR's clock is 72 hours** to the
+> supervisory authority. Don't mix up GDPR (data protection) with PCI (card data).
+
+---
+
 ## Quick reference card — Domain 5
 
 One-page revision sheet. If any line is not instant recall, re-read that section above.

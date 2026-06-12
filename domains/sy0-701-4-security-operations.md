@@ -521,6 +521,79 @@ conversations). Knowing which a stem needs is a recurring trap.
 
 ---
 
+## 15. Applied SOC drills (exam-coach pass — application over definition)
+
+Definitions are covered above; these drills show *how* the concepts are used under exam conditions.
+
+### IR phase timeline — a worked example (NIST SP 800-61)
+
+Phishing → credential theft → lateral movement, mapped to phases with realistic clock times:
+
+| Time | Phase | Action |
+|------|-------|--------|
+| T-30d | **Preparation** | Playbooks written, EDR deployed, on-call rota, backups tested, IOC feed wired to SIEM |
+| 09:14 | **Detection & Analysis** | SIEM correlates `4625` spike + a `4624` from a new geo; analyst confirms true positive, scopes blast radius |
+| 09:31 | **Containment (short-term)** | Disable the account, isolate the host via EDR (network-quarantine, *not* power-off — preserves RAM) |
+| 10:05 | **Eradication** | Remove persistence (rogue service / scheduled task), reset credentials, patch the entry vector |
+| 11:40 | **Recovery** | Restore from known-good backup, re-image, monitor for re-infection before returning to production |
+| +5d | **Post-Incident Activity** | Lessons-learned, update detections, root-cause, metrics (MTTD/MTTR) |
+
+> Exam trap: **eradication before containment** is wrong — you contain first to stop spread, *then*
+> eradicate. And you **isolate, not shut down**, when volatile evidence (RAM, live connections) matters.
+
+### Order of volatility drill (RFC 3227)
+
+Collect most-volatile first: **CPU registers/cache → RAM (running processes, network connections,
+open files) → swap/pagefile & temp filesystems → disk (block devices) → remote/centralised logs →
+archival media/backups → physical configuration & network topology.** Practical sequence: `dump RAM`
+→ capture `netstat`/process list → image disk → pull SIEM/remote logs. Powering off first destroys
+the top three tiers — a classic wrong answer.
+
+### Log analysis — what to actually look for
+
+**Linux** (`/var/log/secure` on RHEL/Fedora, `/var/log/auth.log` on Debian/Ubuntu):
+- `Failed password for invalid user …` repeated from one IP → password spraying / brute force
+- `Accepted password`/`Accepted publickey` immediately after many failures → likely successful brute force
+- `sudo: … COMMAND=` for an unexpected user → privilege misuse; `session opened for user root` off-hours
+- Gaps or truncation in the log → possible anti-forensics (cross-check with remote syslog)
+
+**Windows Security log** — the high-value Event IDs:
+- `4625` failed logon, `4624` successful logon (check **Logon Type**: 3=network, 10=RDP, 2=interactive)
+- `4672` special privileges assigned (admin logon), `4688` process creation (with command line if enabled)
+- `4720` account created, `4728/4732/4756` added to a privileged group → persistence/priv-esc
+- `4768/4769/4771` Kerberos (TGT/service ticket/pre-auth fail) → Kerberoasting / pass-the-ticket hunting
+- `7045` new service installed (System log), `4698` scheduled task created → persistence
+- `4104` PowerShell script-block logging → fileless / living-off-the-land
+- `1102` **Security audit log cleared** → almost always malicious; alert on it directly
+
+### SOAR playbook as a decision tree (phishing report)
+
+```
+Alert: user-reported phishing
+ ├─ URL/attachment present? ──no──► tag informational, close
+ │            │yes
+ │            ▼
+ ├─ Detonate in sandbox → malicious verdict?
+ │   ├─ no  ► enrich (VT, threat-intel), low-confidence → analyst review
+ │   └─ yes ▼
+ ├─ Auto-actions: quarantine the message tenant-wide (same sender/hash),
+ │   block the URL/domain at proxy + the hash at EDR, pull IOCs into SIEM watchlist
+ ├─ Any user CLICKED? (search proxy logs for the URL)
+ │   ├─ no  ► notify users, close with metrics
+ │   └─ yes ► open IR ticket: reset that user's creds, check 4624/4625, isolate if creds used
+ └─ Update detections; record MTTD/MTTR
+```
+
+### Operationalising threat intel (IOCs)
+
+A feed is only useful once it *drives* detection: ingest STIX/TAXII IOCs → SIEM watchlist/correlation
+rule → automatic enrichment on match → SOAR action. Prioritise by **fidelity and shelf-life**: file
+hashes are high-fidelity but short-lived (attackers recompile); domains/IPs are medium; **TTPs
+(ATT&CK techniques)** are the most durable — the *Pyramid of Pain*. Tune out stale indicators or the
+analyst drowns in false positives.
+
+---
+
 ## Quick reference card — Domain 4
 
 One-page revision sheet. If any line is not instant recall, re-read that section above.

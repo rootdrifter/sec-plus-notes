@@ -388,6 +388,52 @@ What a SOC actually *sees* when something is wrong — the bridge to Domain 4 tr
 
 ---
 
+## 12. Applied attack drills (exam-coach pass — context over definition)
+
+### Web vulnerabilities → OWASP Top 10 (2021) context + the fix
+
+| Sec+ vulnerability | OWASP 2021 | Detection indicator | Primary fix |
+|--------------------|-----------|---------------------|-------------|
+| SQL injection | **A03 Injection** | `' OR 1=1--`, UNION/ERROR strings in query params; DB errors in logs | Parameterised queries / prepared statements |
+| Cross-site scripting (XSS) | **A03 Injection** | `<script>`/`onerror=` in inputs reflected in responses | Output encoding + CSP |
+| Command injection | **A03 Injection** | `; id`, `| whoami`, backticks in params | Avoid shell calls; allow-list input |
+| Broken access control / IDOR | **A01 Broken Access Control** | sequential ID enumeration, forced browsing to `/admin` | Server-side authorisation checks per request |
+| Directory traversal / LFI / RFI | **A01** (and A05) | `../../etc/passwd`, `php://`, remote URL in `include` | Canonicalise paths, allow-list, disable URL include |
+| Directory listing (CWE-548) | **A05 Security Misconfiguration** | index pages exposing file trees | `Options -Indexes` *(spectre's primary finding)* |
+| SSRF | **A10 SSRF** | server fetches attacker URL; hits to `169.254.169.254` (cloud metadata) | Allow-list egress; block link-local/metadata |
+| Insecure deserialization | **A08 Integrity Failures** | serialized blobs (`rO0…` Java, `O:` PHP) in requests | Don't deserialize untrusted data; integrity-check |
+| Broken authentication / session | **A07 Auth Failures** | credential stuffing, no lockout, predictable session IDs | MFA, lockout, secure session management |
+| Vulnerable/outdated components | **A06** | old version banners; known CVE in dependency | SBOM + patch management |
+
+> Exam trap: in OWASP 2021, **XSS was folded into A03 Injection** and **CSRF dropped from the top 10**
+> (largely mitigated by frameworks). SSRF is its own category (**A10**) for the first time.
+
+### Social engineering — red flags by attack type
+
+| Attack | Channel | Tell-tale red flags |
+|--------|---------|---------------------|
+| **Phishing** | Email (bulk) | mismatched/look-alike sender domain, urgency, generic greeting, hover-mismatch links, attachment you didn't expect |
+| **Spear phishing** | Email (targeted) | accurate personal/role detail, references a real project, plausible internal sender |
+| **Whaling** | Email → execs | "CEO" requests urgent wire/gift cards, secrecy ("don't tell anyone"), reply-to differs from display name |
+| **BEC** | Email (account/spoof) | changed bank details on an invoice, thread-hijack, slightly-off domain (`rn` for `m`) |
+| **Vishing** | Phone | caller pressures, spoofed caller-ID, asks for MFA code/"verify your password" |
+| **Smishing** | SMS | shortened link, "package held"/"bank locked", number not the org's real shortcode |
+| **Pretexting** | Any | a fabricated scenario/role ("I'm from IT") to justify the request |
+| **Watering hole** | Web | a legitimate industry site silently serving an exploit/redirect |
+
+Common psychological levers (the *why it works*): **authority, urgency, scarcity, social proof,
+familiarity/liking, intimidation, consensus.** Naming the lever is a frequent exam ask.
+
+### Zero-day vs known — the response difference
+
+- **Known vulnerability:** a CVE + patch exists → detection by signature/version; response = patch /
+  virtual-patch (WAF/IPS), prioritise by CVSS + exploitability (EPSS/KEV).
+- **Zero-day:** no signature, no patch yet → detection shifts to **behaviour/anomaly** (EDR, UEBA),
+  response = **compensating controls** (segmentation, least privilege, app allow-listing) until a
+  patch ships. Exam point: you *cannot* signature a zero-day — that's why defence-in-depth matters.
+
+---
+
 ## Quick reference card — Domain 2
 
 One-page revision sheet. If any line is not instant recall, re-read that section above.

@@ -64,8 +64,13 @@ implementation so revision and evidence reinforce each other.
 | [STUDY_SCHEDULE.md](STUDY_SCHEDULE.md) | Six-week spaced-repetition plan to exam day, with a readiness gate |
 | [PORTFOLIO_MAP.md](PORTFOLIO_MAP.md) | Every objective with direct portfolio evidence (study + interview) |
 | [ACRONYMS.md](ACRONYMS.md) | A–Z acronym reference with definitions, domain, and confused-with pairs |
+| [MEMORY_AIDS.md](MEMORY_AIDS.md) | Original mnemonics for the most-confused concepts (factors, risk formulas, IR phases, crypto families) |
 | [practice-exams/exam-01.md](practice-exams/exam-01.md) | 90-question weighted mock + answer key |
 | [practice-exams/exam-03.md](practice-exams/exam-03.md) | 40 scenario-only questions (harder; 15 portfolio-linked) |
+| [practice-exams/exam-04.md](practice-exams/exam-04.md) | 25 adversarial trap-targeted questions + "why candidates get this wrong" |
+| [practice-exams/exam-05.md](practice-exams/exam-05.md) | 20 **cross-domain integration** questions (every Q spans ≥2 domains) |
+| [practice-exams/exam-06.md](practice-exams/exam-06.md) | 10 **performance-based (PBQ)** simulations: ordering, matching, config, log-analysis, risk calc |
+| [practice-exams/sprint-d1.md](practice-exams/sprint-d1.md) … [sprint-d5.md](practice-exams/sprint-d5.md) | Per-domain sprint exams — 10 hardest questions each, for targeted weak-domain review |
 | [practice-exams/run-exam.sh](practice-exams/run-exam.sh) | Timed runner — presents questions, scores by domain |
 | [practice-exams/error-log.md](practice-exams/error-log.md) | Track misses → find patterns → redrill the pattern |
 | [practice-questions.md](practice-questions.md) | 50-item weighted question bank |
