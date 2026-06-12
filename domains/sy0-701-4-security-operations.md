@@ -434,6 +434,51 @@ gates, certificate deployment.
 
 ---
 
+## 14. Network telemetry and flow data (4.4/4.9 — precision pass)
+
+The exam separates **packet capture** (full content) from **flow data** (metadata about
+conversations). Knowing which a stem needs is a recurring trap.
+
+| Source | What it captures | Mechanism | Exam cue |
+|--------|------------------|-----------|----------|
+| **Full packet capture** (pcap — Wireshark/tcpdump) | Entire payload + headers | SPAN/tap copies every byte | "reconstruct the exact data exfiltrated" / "see the payload" |
+| **NetFlow** | Conversation metadata: src/dst IP+port, protocol, bytes, packets, timestamps | Cisco-originated flow records exported to a collector | "which hosts talked, how much, when" — **no payload** |
+| **sFlow** | Statistically *sampled* packets + interface counters | Samples 1-in-N at line rate (scales to high throughput) | "high-speed core switch, sampled" |
+| **IPFIX** | NetFlow's IETF-standardised successor (RFC 7011) | Vendor-neutral flow export, extensible templates | "open-standard flow export" |
+| **SNMP** | Device health/counters (CPU, interface up/down, errors) | Polling (GET) + unsolicited **traps**; use **SNMPv3** for auth+encryption | "alert when an interface saturates" — v1/v2c community strings are the trap |
+
+- *Mechanism that matters:* flow data answers **who/how-much/when** cheaply and at scale; pcap
+  answers **what exactly** but is storage-heavy and often impossible at core-link speeds. A DLP /
+  exfil investigation usually starts at NetFlow (spot the abnormal volume to an external IP) and
+  *then* pulls pcap on that one flow.
+- *Commonly confused:* **SPAN/port-mirror** (switch copies traffic to a monitor port — can drop
+  frames under load) vs a **network TAP** (passive hardware inline — sees everything, no drops).
+  High-assurance forensic capture → TAP.
+- *Exam trap:* a stem asks how to detect beaconing C2 with minimal storage on a 40 Gb link →
+  **NetFlow/IPFIX**, not full packet capture. Reaching for Wireshark is the wrong answer because
+  it cannot keep up and the question signalled "minimal storage."
+- **Log archiving** (the often-skipped 4.4 verb): write-once retention of collected logs for the
+  legally-required period; **archive ≠ active SIEM index** — archived logs are for compliance and
+  later investigation, not real-time correlation. Tampering protection = WORM storage + hashing.
+- *Portfolio connection:* ironveil's AdGuard query log + WireGuard interface counters are the
+  home-scale equivalent of flow telemetry — visibility into *which* DNS/destinations a host
+  reached without logging payloads; watchtower's Wazuh lab is where these sources become
+  correlated detections.
+
+### Forensic legal concepts (4.8 — frequently one or two marks)
+
+- **Chain of custody:** documented who handled evidence, when, and why — an unbroken log or the
+  evidence is inadmissible. **Legal hold:** a directive to *preserve* all potentially relevant
+  data the moment litigation is reasonably anticipated — overrides routine retention/deletion.
+- **e-discovery:** the legal process of identifying/collecting/producing ESI (electronically
+  stored information) for a case. **Acquisition order = order of volatility** (CPU/cache/registers
+  → RAM → swap → disk → archival) — most volatile first.
+- *Exam trap:* deleting data on a normal retention schedule **after** a legal hold is issued is
+  **spoliation** (destruction of evidence) — the hold suspends the schedule. The wrong answer is
+  "follow the retention policy."
+
+---
+
 ### Quick self-test
 - NTP: why is it critical for a SIEM and for Kerberos?
 - SIEM vs SOAR — what does each do?
