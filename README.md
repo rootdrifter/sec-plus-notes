@@ -65,6 +65,8 @@ implementation so revision and evidence reinforce each other.
 | [PORTFOLIO_MAP.md](PORTFOLIO_MAP.md) | Every objective with direct portfolio evidence (study + interview) |
 | [ACRONYMS.md](ACRONYMS.md) | A–Z acronym reference with definitions, domain, and confused-with pairs |
 | [MEMORY_AIDS.md](MEMORY_AIDS.md) | Original mnemonics for the most-confused concepts (factors, risk formulas, IR phases, crypto families) |
+| [DOMAIN_CROSSREF.md](DOMAIN_CROSSREF.md) | Cross-domain connection map — how each concept spans D1–D5 and the high-value exam "bridges" |
+| [LAST_MINUTE_GUIDE.md](LAST_MINUTE_GUIDE.md) | Final-hour one-pager: highest-probability material per domain (must-know · traps · definitions · evidence) |
 | [practice-exams/exam-01.md](practice-exams/exam-01.md) | 90-question weighted mock + answer key |
 | [practice-exams/exam-03.md](practice-exams/exam-03.md) | 40 scenario-only questions (harder; 15 portfolio-linked) |
 | [practice-exams/exam-04.md](practice-exams/exam-04.md) | 25 adversarial trap-targeted questions + "why candidates get this wrong" |
