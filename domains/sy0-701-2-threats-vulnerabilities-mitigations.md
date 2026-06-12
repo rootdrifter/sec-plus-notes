@@ -151,6 +151,27 @@ the human. Underlying **Cialdini principles** (memorise these — the exam tests
   security check and the use of the resource.
 - **DLL injection:** forces a process to load a malicious DLL.
 - **Heap spray:** fills heap with shellcode; increases probability of jumping to shellcode.
+- **Memory injection (umbrella term, objective 2.3):** writing into another process's address
+  space to run attacker code — DLL injection, process hollowing, and reflective loading are
+  variants. *Exam cue:* "code ran inside a legitimate signed process" → memory injection, which is
+  also why it evades signature AV (the host binary is trusted). Defence: EDR behavioural detection,
+  not signatures.
+
+**Path/directory traversal and inclusion:**
+- **Directory (path) traversal:** `../../etc/passwd` style input escapes the web root to read
+  arbitrary files. Defence: canonicalise + validate paths, run the service with least privilege,
+  no user input in file paths.
+  - *Mechanism:* the app concatenates user input into a filesystem path without normalising `..`
+    sequences. *Commonly confused with* SQLi (database) and LFI — traversal is **filesystem** read.
+- **File inclusion (LFI/RFI):** the app `include()`s a path the attacker controls — **local**
+  (read/execute a file already on the server) or **remote** (pull attacker-hosted code; needs the
+  runtime to allow remote URLs). RFI → remote code execution.
+- *Exam trap:* a stem showing `GET /download?file=../../../../etc/shadow` is **directory
+  traversal**, not "privilege escalation" — the wrong answer names the *outcome*; the question
+  asks the *attack class*.
+- *Portfolio connection:* spectre's CWE-548 directory **indexing** finding is adjacent but
+  distinct — indexing exposes a listing the server *offers*; traversal *escapes* the intended
+  directory. Knowing the difference is a clean interview discriminator.
 
 > Portfolio link: [spectre](../../spectre) found directory listing (CWE-548) and information
 > disclosure (CWE-200) on the Apache host; [gauntlet](../../gauntlet) documents exploitation
