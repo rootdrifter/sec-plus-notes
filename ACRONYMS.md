@@ -110,3 +110,37 @@ trap-focused subset.
 > Study tip: cover the right three columns and recall them from the acronym alone — then cover the
 > acronym and produce it from the definition. The exam tests both directions. Pair with
 > `STUDY_SCHEDULE.md` Week 6 (acronym + trap review).
+
+---
+
+## Addendum — acronyms added by the 2026-06-12 precision pass
+
+Acronyms introduced (or newly emphasised) by the flow-telemetry, network-appliance, crypto-precision,
+and governance fills. Kept as a dated block so the provenance is clear; fold into the main A–Z on the
+next full revision.
+
+| Acronym | Expansion | One-line definition | Domain | Easily confused with |
+|---------|-----------|---------------------|--------|----------------------|
+| BCP | Business Continuity Plan | Keep the business running *during* disruption | D5 | DRP (restore *after*) |
+| DPA | Data Processing Agreement | Contract governing a processor's handling of personal data | D5 | DPA = Data Protection Act (UK) — context-dependent |
+| IPFIX | IP Flow Information Export | IETF-standard flow export (NetFlow successor, RFC 7011) | D4 | NetFlow, sFlow |
+| IV | Initialisation Vector | Randomiser so identical plaintext encrypts differently | D1 | nonce, salt |
+| KDF | Key Derivation Function | Derives keys from passwords (PBKDF2/bcrypt/Argon2id) | D1 | hash (fast; wrong for passwords) |
+| KPI | Key Performance Indicator | Lagging metric of past performance | D5 | KRI (leading/risk) |
+| KRI | Key Risk Indicator | Leading indicator that risk is rising | D5 | KPI (performance) |
+| LFI/RFI | Local / Remote File Inclusion | App includes attacker-controlled file (RFI → RCE) | D2 | directory traversal (read), SQLi |
+| NGFW | Next-Generation Firewall | App-aware FW + IPS + TLS inspection | D3 | WAF (app-specific), UTM (all-in-one) |
+| NTP | Network Time Protocol | Clock sync — vital for log correlation + Kerberos | D4 | — |
+| PFS | Perfect Forward Secrecy | Past sessions safe even if long-term key leaks (ephemeral keys) | D1 | static RSA (no PFS) |
+| PMF | Protected Management Frames | 802.11w — blunts deauth/disassoc attacks | D2/D4 | WPS (insecure) |
+| RCE | Remote Code Execution | Attacker runs arbitrary code on the target | D2 | LFI/RFI (a path to it) |
+| RDP | Remote Desktop Protocol | Windows remote GUI; top ransomware initial-access vector if exposed | D4 | SSH, VNC |
+| RoE | Rules of Engagement | Agreed scope/timing/method for a pentest | D5 | SOW (deliverables) |
+| SCC | Standard Contractual Clauses | Lawful GDPR mechanism for transfers outside the EEA | D5 | adequacy decision |
+| sFlow | sampled Flow | Statistically-sampled flow/interface telemetry at line rate | D4 | NetFlow (per-flow), IPFIX |
+| SNMP | Simple Network Management Protocol | Device health polling + traps (use v3 for auth/encryption) | D4 | NetFlow (flow data, not health) |
+| SPAN | Switched Port Analyzer | Switch port-mirroring feed for IDS/capture (can drop under load) | D3/D4 | TAP (passive, lossless) |
+| TAP | Test Access Point | Passive inline hardware copy of traffic — lossless | D3/D4 | SPAN (can drop) |
+| TOCTOU | Time-of-Check to Time-of-Use | Race condition between check and use | D2 | — |
+| UTM | Unified Threat Management | All-in-one security appliance (FW+IPS+AV+filter) | D3 | NGFW; single point of failure |
+| WORM | Write Once, Read Many | Immutable storage for logs/backups (anti-ransomware/anti-tamper) | D3/D4 | standard backup (mutable) |
