@@ -171,3 +171,205 @@ defined trigger for action.
 *Practice by talking through your response out loud before reading the model answer — that's exactly
 how a SOC interview and the exam's scenario questions are scored: the reasoning and the order, not a
 single keyword.*
+
+---
+
+# Expansion — Scenarios 26–50 (2026-06-12)
+
+Twenty-five further shift scenarios, again 5 per domain, in the fuller format:
+**situation → response → why → ATT&CK → portfolio link.** Deduplicated against S1–S25 and the
+per-domain drills. ATT&CK IDs are top technique + sub-technique where the sub-technique is specific.
+
+## Domain 1 — General Security Concepts
+
+**S26.** *A change ticket to open a new inbound firewall port is marked "emergency — skip CAB".*
+→ Emergency changes are allowed, but still require a documented justification, a named approver, a
+backout plan, and *retrospective* CAB review. Implement, then file the record same-day; don't let
+"emergency" become a standing bypass. **Why:** change management exists to prevent unreviewed attack
+surface; the audit trail is the control. **ATT&CK:** prevents unmanaged exposure (defensive — no
+single technique). **Portfolio:** ironveil/nullbyte are documented, reproducible builds — change is
+captured in git, the same discipline at home scale.
+
+**S27.** *Marketing wants to deploy a chatbot that will hold customer chat transcripts.*
+→ Apply privacy-by-design before launch: data minimisation (don't store what you don't need),
+classification, retention limits, and a lawful basis. Treat transcripts as potential PII.
+**Why:** building privacy in up front is cheaper and is a GDPR expectation; bolt-on fails audits.
+**ATT&CK:** reduces collectable data if breached (T1530 data-from-cloud impact lowered).
+**Portfolio:** mirage deliberately synthesised data (CVAE) to avoid processing real PII — privacy by
+design as a methodology choice.
+
+**S28.** *A team proposes a single shared admin login for an app "so everyone can manage it".*
+→ Refuse: shared accounts destroy accountability and non-repudiation. Issue individual accounts with
+RBAC, and use PAM/check-out for the privileged role. **Why:** you must be able to attribute every
+action to a person (the third A — accounting). **ATT&CK:** removes a valid-accounts blind spot
+(T1078). **Portfolio:** nullbyte's nine *separate* profiles embody per-identity compartmentalisation.
+
+**S29.** *A vendor's TLS cert for an integration expired overnight; an engineer wants to disable cert
+validation "to restore service fast".*
+→ Don't disable validation — that opens MITM. Renew/replace the cert (or pin a temporary valid one),
+and add expiry monitoring so it never surprises you again. **Why:** turning off validation trades an
+outage for a confidentiality/integrity hole. **ATT&CK:** prevents adversary-in-the-middle (T1557).
+**Portfolio:** the rootdrifter.io deploy uses Let's Encrypt with automated renewal + a renewal
+dry-run — expiry handled by process, not panic.
+
+**S30.** *An exec asks you to grant a contractor "the same access as a full employee for convenience".*
+→ Scope to the contractor's actual task, time-box it to the engagement, and schedule a deprovision
+date. Convenience is not a access-control criterion. **Why:** least privilege + joiner/mover/leaver
+hygiene; orphaned contractor access is a classic breach path. **ATT&CK:** closes valid-accounts
+persistence (T1078). **Portfolio:** ties to D5 third-party-access discipline (S21) — same principle,
+identity side.
+
+## Domain 2 — Threats, Vulnerabilities & Mitigations
+
+**S31.** *A signed, legitimate process on an endpoint is spawning PowerShell with an encoded command.*
+→ Treat as fileless/memory injection or living-off-the-land. Capture the process tree + the decoded
+command, isolate the host (preserve RAM first), hunt the same parent-child pattern fleet-wide.
+**Why:** signature AV trusts the signed host process — behaviour, not signature, is the tell.
+**ATT&CK:** T1059.001 (PowerShell), T1055 (process injection). **Portfolio:** maps to gauntlet's
+post-exploitation notes and watchtower's planned T1055 detection scenario.
+
+**S32.** *DNS logs show one host resolving long random-looking subdomains under a single parent
+domain, steadily, all day.*
+→ Likely DNS tunnelling / exfil or beaconing. Correlate with NetFlow volume, block the parent domain,
+inspect the host, and quantify what may have left. **Why:** high-entropy, high-frequency subdomain
+queries are an exfil signature; DNS is often unmonitored. **ATT&CK:** T1071.004 (DNS C2), T1048
+(exfil over alternative protocol). **Portfolio:** ironveil's AdGuard query log is exactly where
+you'd spot this at host scale; watchtower would alert on it.
+
+**S33.** *A developer pulled an npm package that was updated yesterday and now their build calls out to
+an unknown host.*
+→ Suspected supply-chain/dependency compromise. Pin/rollback the version, isolate the build agent,
+diff the package, check for credential theft in CI, and report upstream. **Why:** trusted update
+channels are a top-tier vector (the "trusted relationship" problem). **ATT&CK:** T1195.002
+(compromise software supply chain). **Portfolio:** D2 §2.3 supply-chain catalogue; spectre's
+SBOM-style asset reasoning.
+
+**S34.** *Several users received an SMS with a shortened link "from the bank" urging immediate login.*
+→ Smishing. Tell users not to click, report the number, check whether the link domain is typosquatted,
+and warn via a known-good channel. If anyone entered credentials → reset + watch those accounts.
+**Why:** mobile out-of-band channels bypass email gateways; urgency is the manipulation lever.
+**ATT&CK:** T1660 (phishing — mobile), T1656 (impersonation). **Portfolio:** mirage's research on
+urgency/authority causal triggers explains *why* the lure works — informs the training response.
+
+**S35.** *A pentest report flags that your login page reveals "user not found" vs "wrong password".*
+→ Username enumeration. Return a single generic failure message, add rate-limiting/lockout, and log
+the attempts. **Why:** distinct error messages let an attacker build a valid-user list for spraying.
+**ATT&CK:** T1589.001 (gather victim identity), feeding T1110.003 (password spraying). **Portfolio:**
+spectre's grey-box methodology checks exactly this kind of information disclosure (CWE-200 family).
+
+## Domain 3 — Security Architecture
+
+**S36.** *A microservice needs a database password; a dev hardcodes it in the container image.*
+→ Secrets never belong in images (anyone who pulls the image gets them). Inject via a secrets manager
+at runtime, rotate the exposed credential immediately, and scan the registry for other embedded
+secrets. **Why:** images are distributed artefacts; an embedded secret is a permanent leak.
+**ATT&CK:** T1552.001 (credentials in files), T1610 (deploy container). **Portfolio:** D3 container
+security block; nullbyte's "secrets never in env/plain" posture.
+
+**S37.** *Architecture review: a new app puts the database in the same subnet as the public web tier.*
+→ Segment it: web tier in the screened subnet, database in a private tier with no inbound internet
+path, traffic only via the app tier (defence in depth + microsegmentation). **Why:** flat networks
+let one web compromise reach the crown jewels directly (east-west). **ATT&CK:** limits T1210 (exploit
+remote services) lateral movement. **Portfolio:** spectre's isolated lab subnet models segmented
+test architecture.
+
+**S38.** *A SaaS contract review: who is responsible for patching the underlying OS and the app data?*
+→ Apply the shared-responsibility model: for SaaS the provider patches the stack; the customer owns
+*data, access, and configuration*. Verify it in the contract, and own your side (IAM, DLP, config).
+**Why:** most cloud breaches are the *customer's* config side, not the provider's. **ATT&CK:** prevents
+T1530 (data from cloud) via correct config ownership. **Portfolio:** ties to the D3 shared-responsibility
+table — guaranteed exam marks.
+
+**S39.** *DR plan lists a hot site, but the runbook has never been exercised and key staff have changed.*
+→ Schedule a failover test (or at least a tabletop), update contact trees and runbooks, and validate
+the RTO/RPO are still met with current staff/systems. **Why:** an untested DR plan is a document, not
+a capability; people and dependencies drift. **ATT&CK:** resilience against T1486 (data encrypted for
+impact / ransomware). **Portfolio:** rootdrifter.io has daily backups + a tested restore path — the
+small-scale version of this discipline.
+
+**S40.** *A team wants to allow inbound RDP from "anywhere" temporarily for a remote vendor.*
+→ Never expose RDP to the internet. Put it behind a VPN or a jump server with MFA, restrict source IPs,
+time-box it, and log the session. **Why:** exposed RDP is among the most-exploited initial-access
+vectors (ransomware loves it). **ATT&CK:** T1133 (external remote services), T1021.001 (RDP).
+**Portfolio:** ironveil's dracut-sshd remote unlock is reachable only via key-based SSH, never an
+open management port — the correct pattern.
+
+## Domain 4 — Security Operations
+
+**S41.** *SIEM shows a privileged account active at 03:00 from a country no employee is in, while the
+same account also has a 09:00 login from the office.*
+→ Impossible-travel / anomalous privileged use. Disable the account, kill sessions, force re-auth,
+and investigate what the off-hours session touched. **Why:** concurrent geographically-impossible
+logins indicate credential compromise; privileged makes it urgent. **ATT&CK:** T1078.004 (cloud/valid
+accounts), detected via UEBA. **Portfolio:** watchtower's planned conditional-access/UEBA scenario;
+D4 §2 conditional access.
+
+**S42.** *An analyst wants to "close" a noisy true-positive malware alert because EDR already
+quarantined the file.*
+→ Quarantine is containment, not closure. Confirm scope (other hosts/same hash), root cause (how it
+arrived), persistence removal, and credential exposure — *then* close with notes. **Why:** closing on
+"AV caught it" misses the delivery vector and lateral spread. **ATT&CK:** validate against T1204
+(user execution) entry + T1547 persistence. **Portfolio:** gauntlet's detection notes ("what log does
+this generate?") feed exactly this closure rigor.
+
+**S43.** *You need to prove an alert's binary is malicious without tipping off the attacker.*
+→ Hash it and check threat intel / detonate a copy in an isolated sandbox — never run it in place or
+on the live host, and don't connect the sandbox to production. **Why:** static+dynamic analysis on a
+copy preserves the live evidence and avoids tipping C2. **ATT&CK:** analysis supports identifying
+T1027 (obfuscated/packed files). **Portfolio:** watchtower's T1027 detection scenario; D4 §4 sandbox.
+
+**S44.** *Logs from a critical server stopped arriving at the SIEM two days ago and nobody noticed.*
+→ Treat log-source silence as an incident (could be a crash or deliberate defence evasion). Restore
+the pipeline, back-fill if possible, and add a "log source went quiet" heartbeat alert. **Why:**
+attackers stop/clear logging to hide; a silent source is a blind spot either way. **ATT&CK:** T1562.001
+(impair defences — disable logging), T1070 (indicator removal). **Portfolio:** watchtower's T1562
+scenario; this is *the* SOC monitoring-of-the-monitoring lesson.
+
+**S45.** *A new detection rule is proposed; how do you avoid it drowning the SOC?*
+→ Test it against historical data first (retro-hunt) to estimate FP rate, scope it (asset/user/time),
+add severity, and trial in alert-only mode before it pages anyone. Measure precision before promoting.
+**Why:** unvalidated rules cause alert fatigue (the real-world cost of every "just add a rule").
+**ATT&CK:** detection-engineering discipline across techniques. **Portfolio:** watchtower's MTTD
+tracker + Wazuh rule templates operationalise exactly this validate-before-promote loop.
+
+## Domain 5 — Program Management, Risk & Compliance
+
+**S46.** *A business unit wants to accept the risk of running an unsupported app for another year.*
+→ Risk acceptance must be *formal*: documented, quantified (ALE), signed by the risk owner with
+authority, time-bounded, and revisited. Pair it with compensating controls. **Why:** informal "we'll
+accept it" leaves no accountability and no review trigger. **ATT&CK:** compensating monitoring lowers
+exploit likelihood (e.g. T1190). **Portfolio:** D5 §1 risk treatment; mirrors exam-04 Q25
+exception-vs-compensating-control.
+
+**S47.** *Audit finds access reviews haven't run in 18 months; many leavers still have accounts.*
+→ Immediate: disable confirmed-leaver accounts. Systemic: reinstate periodic access recertification,
+tie deprovisioning to HR offboarding, and report the KRI trend to leadership. **Why:** orphaned
+accounts are standing attack surface and a compliance finding. **ATT&CK:** removes T1078 (valid
+accounts) footholds. **Portfolio:** D4 §2 account lifecycle; D5 §8 KRI reporting.
+
+**S48.** *A processor (sub-vendor) of your cloud provider will store EU customer data in a third
+country.*
+→ Data-sovereignty/transfer issue. Confirm a lawful transfer mechanism (SCCs/adequacy), update the
+DPA and records of processing, and assess sub-processor risk. **Why:** GDPR restricts transfers
+outside the EEA; the controller stays accountable for the processor chain. **ATT&CK:** governance,
+not a technique. **Portfolio:** D5 §3/§4 regulations + data roles (controller/processor).
+
+**S49.** *Leadership asks for one number that shows whether the security programme is improving.*
+→ No single number suffices — present a small KRI/KPI set with trends against risk appetite (e.g.
+mean time to detect, % critical patches within SLA, overdue access reviews). **Why:** a single metric
+is gameable and hides trade-offs; trends tied to thresholds drive decisions. **ATT&CK:** MTTD ties to
+overall detection coverage. **Portfolio:** watchtower's MTTD tracker is a concrete contribution to
+this dashboard.
+
+**S50.** *An incident is contained; the board wants a post-incident report.*
+→ Deliver a lessons-learned: timeline, root cause, what worked/failed, and concrete control/process
+changes with owners and dates — blameless, focused on systemic fixes. Feed it back into the IR plan.
+**Why:** the "lessons learned" phase (NIST 800-61) is where detection improves; skipping it repeats
+the incident. **ATT&CK:** closes the gaps that allowed the original chain. **Portfolio:** gauntlet's
+offensive→detection mapping is the raw material for "how would we catch this next time".
+
+---
+
+*Fifty scenarios total. The format deliberately escalates: S1–S25 build the validate→contain→tune
+reflex; S26–S50 add the ATT&CK technique and the portfolio evidence so each answer is interview-ready,
+not just exam-ready.*
