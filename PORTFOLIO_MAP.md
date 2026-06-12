@@ -37,8 +37,10 @@ security), mirage (causal LLM phishing research), gauntlet (CTF methodology).
 | 4.4 Detection engineering from attack technique | D4 | gauntlet defender-perspective sections (Event IDs, Sigma/Splunk) | gauntlet |
 | 4.5 Email security / anti-phishing | D4 | Phishing-corpus causal analysis (channel-independent constructs) | mirage |
 | 4.6 IAM — authentication factors, phishing-resistant | D4 | FIDO2 hardware key (something-you-have + presence) | ironveil |
-| 4.8 Incident response — evidence handling / chain of custody | D4 | SHA-256-hashed artefacts, dual session logs, scope-halt discipline | spectre |
+| 4.8 Incident response — evidence handling / chain of custody | D4 | SHA-256-hashed artefacts, dual session logs, scope-halt discipline; full forensic spec in `spectre/evidence-chain.md` (integrity vs authenticity vs custody kept distinct) | spectre |
 | 4.8 Forensics — order of volatility, defensible reporting | D4 | PTES-aligned reporting, ISO 27002 / CIS mapping | spectre |
+| 3.1 Architecture — threat modelling / adversary analysis | D3 | `ironveil/threat-model.md`: defined adversary set, asset inventory, per-vector (control → residual → honest gap) incl. the measured-boot/evil-maid gap | ironveil |
+| 3.1 Architecture — blast-radius / per-boundary threat model | D3 | `nullbyte/threat-model.md`: per-profile blast-radius analysis against a defined adversary set | nullbyte |
 | 5.1 Risk management — compensating controls, scope/ROE | D5 | LinPEAS halted pre-token-harvest (rules-of-engagement) | spectre |
 | 5.2 Frameworks / benchmark mapping | D5 | CIS Apache 2.4 + PostgreSQL 16 L1, ISO/IEC 27002:2022 | spectre |
 | 5.4 Privacy by design / data minimisation | D5 | CVAE-synthesised vishing data — no real voice processed | mirage |
