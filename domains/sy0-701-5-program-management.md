@@ -188,6 +188,36 @@ open-source libraries. Essential for supply-chain risk management. Mandated in s
 | Tabletop exercise | Discussion-based scenario walkthrough | No live systems; tests process and decision-making |
 | Bug bounty | External researcher programme; reward for reported vulnerabilities | Continuous, crowd-sourced testing |
 
+**Penetration-test knowledge factor (5.5 — high-yield distinction):**
+- **Known environment (white box):** tester has full architecture/credentials/source — fastest,
+  most thorough, least realistic of an external attacker.
+- **Unknown environment (black box):** tester starts with nothing — most realistic external view,
+  slowest, may miss internal issues.
+- **Partially known (grey box):** limited knowledge (e.g. a standard user account) — the efficient
+  middle ground, models an insider or a foothold.
+- **Engagement scoping terms:** **rules of engagement (RoE)** define what/when/how; **active vs
+  passive reconnaissance** (passive = no packets to target, e.g. OSINT; active = direct probing).
+- *Portfolio connection:* **spectre is a grey-box engagement** — partial knowledge, PTES-structured,
+  exploited to prove impact. That is the exact "partially known environment" exam answer made
+  concrete.
+
+**Responsible disclosure vs bug bounty (exam loves this pairing):**
+- **Responsible (coordinated) disclosure:** researcher privately reports a flaw and gives the
+  vendor time to patch before going public — process, not necessarily paid.
+- **Bug bounty:** a *funded* programme that pays for valid reports — a way to operationalise
+  disclosure. *Exam trap:* a stem about giving a vendor 90 days before publishing is **responsible
+  disclosure**, even if no money changes hands; "bug bounty" is the distractor.
+
+**Due care vs due diligence (governance trap):**
+- **Due diligence:** the *investigation* — researching, assessing risk, vetting a vendor *before*
+  acting (the homework).
+- **Due care:** the *ongoing action* — implementing and maintaining reasonable safeguards (the
+  prudent-person standard, doing the work). *Mnemonic:* dili**gence** = investi**gate**; **care** =
+  ongoing **care**taking.
+- **Exemption / exception:** a *documented, time-bounded, risk-accepted* deviation from a policy or
+  control, signed off by the risk owner — not an informal "we'll skip it." Distinct from a
+  **compensating control** (an alternative control that meets the intent another way).
+
 ---
 
 ## 7. Security awareness and the human element
