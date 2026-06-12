@@ -9,6 +9,28 @@ study decisions — optimistic scoring would only hurt the exam result.
 filled — see notes); depth is at or above exam level everywhere else. The remaining risk is not
 coverage, it is **recall under time pressure** — drive the practice exams, not more notes.
 
+**Precision pass 2026-06-12 (overnight session).** A second objective-by-objective sweep using
+zero-hit term searches found a handful of genuinely-thin high-yield items (not whole objectives)
+and filled them — committed per domain:
+- **D4 §14** — network *flow* telemetry (NetFlow/sFlow/IPFIX/SNMP) vs full packet capture, SPAN
+  vs TAP, log archiving, and forensic legal concepts (chain of custody, legal hold, e-discovery,
+  spoliation). sFlow/IPFIX/archiving had been absent.
+- **D2 §5** — memory-injection umbrella (process hollowing/reflective loading) and
+  directory/path traversal + LFI/RFI (both previously absent), with the traversal-vs-indexing
+  discriminator vs spectre's CWE-548.
+- **D5 §6** — pentest knowledge factor (known/unknown/partial environment), responsible
+  disclosure vs bug bounty, due care vs due diligence, exemption/exception. due-care and the
+  disclosure pairing had been absent.
+- **D3 §2** — network security appliances + placement table (NGFW/WAF/UTM/forward+reverse
+  proxy/load balancer/IDS vs IPS) and inline-vs-passive **fail-open/fail-closed** decision. This
+  was the largest real hole (3.2 appliance placement).
+- **D1 §6** — salt vs pepper, key stretching as the password answer (not "stronger hash"),
+  ephemeral keys / PFS mechanism, and the nonce/IV/salt disambiguation. salting and ephemeral
+  had been absent terms.
+
+These are depth/trap refinements, not new objectives — coverage was already DEEP. The honest
+bottom line below is unchanged: the constraint is timed recall, not content.
+
 ---
 
 ## Domain 1 — General Security Concepts (12%)

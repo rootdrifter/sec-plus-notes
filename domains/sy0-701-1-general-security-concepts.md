@@ -192,6 +192,31 @@ lives only in a secure token vault. Reduces PCI scope because tokens are useless
 **Data masking:** presenting a partial or pseudonymised version of data for non-production use.
 Different from tokenisation — masking may be irreversible.
 
+**Salting, stretching, and ephemerality (high-yield crypto precision):**
+- **Salt:** a unique random value added per password *before* hashing. *Mechanism:* defeats
+  precomputed **rainbow tables** and ensures two users with the same password get different
+  hashes. Must be **per-user and unique** (a single global salt only partially helps). Stored
+  alongside the hash — it is not secret.
+- **Pepper:** a *secret* site-wide value added to the hash, kept *outside* the database (e.g. in an
+  HSM/app config). *Commonly confused with salt:* salt is unique-and-stored; pepper is
+  secret-and-separate. Defence in depth — a DB-only breach can't brute-force without the pepper.
+- **Key stretching:** deliberately slow, iterated derivation (PBKDF2, bcrypt, Argon2id) that
+  multiplies the attacker's per-guess cost. *Exam cue:* "make offline cracking infeasible" →
+  stretching + salt, **not** "use a stronger hash like SHA-512" (fast hashes are the wrong answer
+  for passwords precisely because they're fast).
+- **Ephemeral keys / Perfect Forward Secrecy (PFS):** a fresh key per session (the **E** in
+  **ECDHE** = ephemeral) that is discarded afterward. *Mechanism:* compromising the server's
+  long-term private key later **cannot** decrypt past captured sessions, because the session keys
+  no longer exist. *Exam trap:* static RSA key exchange has **no** forward secrecy; the fix is
+  ephemeral Diffie-Hellman (DHE/ECDHE), which TLS 1.3 mandates.
+- **Nonce / IV / salt — don't conflate:** all three are "extra randomness," but a **nonce** is
+  number-used-once for replay resistance, an **IV** randomises a cipher so identical plaintext
+  blocks differ, and a **salt** is specifically for password hashing. The exam mixes these as
+  distractors.
+- *Portfolio connection:* ironveil's LUKS2 keyslots derive the master key with **Argon2id**
+  (memory-hard stretching) and WireGuard uses **ephemeral** Curve25519 session keys (PFS by
+  design) — both are these concepts as deployed config, not theory.
+
 ---
 
 ## 7. Common security infrastructure (rapid-reference)
