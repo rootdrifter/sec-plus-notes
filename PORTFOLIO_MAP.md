@@ -45,6 +45,34 @@ security), mirage (causal LLM phishing research), gauntlet (CTF methodology).
 | 5.5 Third-party / supply-chain risk, provenance | D5 | Auditable from-scratch model vs opaque pretrained (provenance trade-off) | oracle |
 | 5.6 Evaluation methodology / measurement rigour | D5 | ICC(2,1)=0.98 inter-rater reliability; DoWhy refutation | mirage |
 
+## Expansion — additional verified mappings (2026-06-12)
+
+Further objective rows with concrete evidence, including the precision-pass concepts (flow
+telemetry, ephemeral keys, fail-modes) and the now-live publication platform. Same rule: nothing
+aspirational — watchtower rows are marked **(in build)** and describe the *designed* detection, not
+claimed results.
+
+| Objective (SY0-701) | Domain | Portfolio evidence | Repo |
+|---------------------|--------|--------------------|------|
+| 1.4 Ephemeral keys / perfect forward secrecy | D1 | WireGuard Curve25519 ephemeral session keys (`wg-CH-FI-2`/`wg-SE-FI-1`) — PFS by design | ironveil |
+| 1.4 Key stretching / memory-hard KDF | D1 | LUKS2 passphrase keyslot derived with **Argon2id** (memory-hard), not plain PBKDF2 | ironveil |
+| 2.3 Memory-resident / signature-evasion concepts | D2 | gauntlet post-exploitation notes (living-off-the-land, behaviour over signature) | gauntlet |
+| 3.2 Secure communication protocols — DoH vs plaintext DNS | D3 | AdGuard → Quad9 **DoH/443** inside the full tunnel; no plaintext :53 egress | ironveil |
+| 3.2 Network appliance placement / chokepoint | D3 | DNS filtering chokepoint (AdGuard) + SSH-only management ingress (dracut-sshd), no open mgmt ports | ironveil |
+| 3.4 Backups / RTO-RPO / tested restore | D3/D4 | rootdrifter.io: daily automated backups + verified restore path; immutable off-host copy | rootdrifter.io |
+| 4.1 Hardening — web platform (TLS, headers, CSP) | D4 | rootdrifter.io nginx: HTTP→HTTPS 301, 6 security headers, Ghost-correct CSP, `server_tokens off` | rootdrifter.io |
+| 4.4 Flow/telemetry visibility (host scale) | D4 | AdGuard query log + WireGuard interface counters = who/where without payload (NetFlow analogue) | ironveil |
+| 4.4 Defensive monitoring — SIEM detection design | D4 | Wazuh ATT&CK detection scenarios + custom rule templates **(in build)** | watchtower |
+| 4.5 Brute-force detection / response | D4 | rootdrifter.io fail2ban actively banning real SSH brute-force (5 IPs observed) | rootdrifter.io |
+| 4.8 Offensive technique → detection mapping | D4 | gauntlet ATT&CK techniques mapped to watchtower detection scenarios (GAUNTLET_BRIDGE) **(in build)** | gauntlet→watchtower |
+| 5.5 Pentest classification (grey-box / RoE) | D5 | spectre = partially-known environment, PTES-structured, LinPEAS halted at scope boundary | spectre |
+| 5.5 Provenance / from-scratch vs pretrained trade-off | D5 | oracle TerraCNN (93.97% / F1 0.9390, auditable) vs ResNet-18 (99.11% / F1 0.9916, opaque) | oracle |
+| 5.4 Data classification / handling at OS level | D5 | nullbyte per-profile compartmentalisation = data separation by sensitivity | nullbyte |
+
+> rootdrifter.io is the live publication/SIEM-blog platform (Stage 1). It is operational
+> infrastructure, not one of the six project repos, but it is real, deployed evidence for the
+> hardening/monitoring objectives above.
+
 ## How to drill with this map
 
 - **Per domain:** before a domain's exam, read its rows here and open the linked repo page — turn
