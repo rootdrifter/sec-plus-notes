@@ -82,6 +82,33 @@ risk in dependencies; timeout/execution environment risks.
 > Portfolio link: [ironveil](../../ironveil) routes DNS through AdGuard Home → WireGuard →
 > upstream resolver; [nullbyte](../../nullbyte) uses RethinkDNS with DoH.
 
+### Network security appliances and placement (objective 3.2)
+
+The exam tests *which appliance* and *where it sits* (inline vs passive, where in the path).
+
+| Appliance | Role | Placement / mode | Exam discriminator |
+|-----------|------|------------------|--------------------|
+| **Stateful firewall** | Tracks connection state, allows return traffic | Inline at trust boundaries | vs **stateless ACL** which judges each packet alone |
+| **NGFW** (next-gen) | Adds app-awareness, IDS/IPS, user-ID, TLS inspection | Inline perimeter / internal segments | "identify the *application* regardless of port" → NGFW |
+| **WAF** | Filters HTTP(S) for OWASP-class attacks (SQLi/XSS) | In front of web apps (reverse-proxy position) | "protect a *specific web application*" → WAF, not a network firewall |
+| **UTM** | All-in-one (FW+IPS+AV+content filter) | SMB perimeter | "single box, limited staff" → UTM; single point of failure is the trap |
+| **Forward proxy** | Clients → internet through it (filtering, caching, anonymity for clients) | Egress | "control/log users' outbound browsing" |
+| **Reverse proxy** | Internet → internal servers through it (TLS termination, load spread, hides origin) | Ingress | "hide/offload the backend servers" |
+| **Load balancer** | Distributes across server pool (round-robin, least-conn); health checks | Ingress, in front of a pool | adds availability; **active/active vs active/passive** is the HA trap |
+| **IDS** | Detects + alerts only | **Passive** — out of band, fed by SPAN/TAP | cannot drop traffic |
+| **IPS** | Detects + blocks | **Inline** — sits in the traffic path | can drop; a failure here can break the link |
+
+- **Inline vs passive / fail modes:** an inline device (IPS, firewall) that fails can either
+  **fail-open** (traffic flows, *availability* preserved, security lost) or **fail-closed**
+  (traffic stops, *security* preserved, availability lost). *Exam trap:* a security-critical
+  segment should **fail-closed**; a high-availability business link is often configured
+  **fail-open** — the "correct" answer depends on whether the stem prioritises C-I or A.
+- **Jump server / bastion** (cross-ref §2) is the *administrative* ingress choke point; a
+  **reverse proxy** is the *application-traffic* ingress choke point — don't conflate them.
+- *Portfolio connection:* watchtower's planned architecture and ironveil's AdGuard (a filtering
+  forward-resolver) are concrete instances; spectre's target sat behind no WAF, which is why the
+  directory-indexing finding was directly reachable.
+
 ---
 
 ## 3. Infrastructure security
