@@ -43,9 +43,11 @@ VPN logs, cloud audit trails (AWS CloudTrail, Azure Activity Log), NetFlow.
 - **Sensitivity vs specificity trade-off** in detection: high sensitivity catches everything but
   creates noise; high specificity reduces noise but may miss novel attacks.
 
-> Portfolio link: sec-plus-notes [applications-private] identifies a **SIEM home lab** (Wazuh
-> or Splunk) as the top portfolio gap for SOC analyst targeting. Building one and producing
-> real MTTD/MTTR data would close this gap.
+> Portfolio link: the **watchtower** Wazuh SIEM home lab is the portfolio's detection-evidence piece
+> for SOC targeting — 20 ATT&CK-mapped detection scenarios with starter Wazuh rules and an MTTD
+> tracker, each tied to an attack technique demonstrated in the gauntlet CTF writeups. Producing real
+> MTTD/MTTR data from live runs is the remaining step that turns the detection design into measured
+> evidence.
 
 ---
 
