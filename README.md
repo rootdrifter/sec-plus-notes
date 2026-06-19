@@ -61,6 +61,7 @@ implementation so revision and evidence reinforce each other.
 | File | Purpose |
 |------|---------|
 | [EXAM_READINESS.md](EXAM_READINESS.md) | Honest per-domain coverage matrix + recommended focus hours |
+| [REVISION_PRIORITY.md](REVISION_PRIORITY.md) | Expected-value-ranked drill queue — the specific high-yield topics to revise first, and the asset to drill each |
 | [STUDY_SCHEDULE.md](STUDY_SCHEDULE.md) | Six-week spaced-repetition plan to exam day, with a readiness gate |
 | [PORTFOLIO_MAP.md](PORTFOLIO_MAP.md) | Every objective with direct portfolio evidence (study + interview) |
 | [ACRONYMS.md](ACRONYMS.md) | A–Z acronym reference with definitions, domain, and confused-with pairs |
