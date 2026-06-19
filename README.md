@@ -108,4 +108,4 @@ underlying concepts are unchanged, so they remain as supplementary cross-referen
 
 ---
 
-*Part of the [rootdrifter](https://github.com/rootdrifter) security portfolio — study notes for a security-cleared candidate preparing CompTIA Security+ (SY0-701) and CEH.*
+*Part of the [rootdrifter](https://github.com/rootdrifter) security portfolio — see the live platform at [rootdrifter.io](https://rootdrifter.io). Study notes for a security-cleared candidate preparing CompTIA Security+ (SY0-701) and CEH.*
