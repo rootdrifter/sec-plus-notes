@@ -292,7 +292,7 @@ demonstrate?
 - C. Separation of duties
 - D. Defence in depth
 
-**Q39 (D5).** A vendor will process your customer data. Which artifact MOST directly governs the
+**Q39 (D5).** A vendor will process your customer data. Which artefact MOST directly governs the
 security expectations and right to audit?
 - A. A marketing brochure
 - B. A contract with security clauses / SLA plus a right-to-audit and data-handling terms
@@ -315,7 +315,7 @@ concept does this trade-off illustrate?
 enforces. *Distractors:* A inverts the two — the classic trap; C/D split the PDP's sub-components
 but assign the wrong roles.
 
-**Q2 — B ★.** Touch-only enrollment forces physical presence at every unlock; a remotely
+**Q2 — B ★.** Touch-only enrolment forces physical presence at every unlock; a remotely
 activatable key would defeat that. *A* confuses it with transport confidentiality; *C* non-repudiation
 is a signature property; *D* nothing here provides escrow (the offline passphrase is fallback, not
 escrow). Ref: ironveil nitrokey.md.

@@ -82,7 +82,7 @@ The ability to prove that an entity performed an action — they cannot later de
   usable across devices; platform = bound to one device's secure enclave (Windows Hello, Face ID).
 
 > Portfolio link: [ironveil](../../ironveil) uses a Nitrokey 3A NFC (FIDO2 roaming authenticator)
-> for LUKS2 disk unlock. The touch-only (no clientPin) enrollment is a single-factor *possession*
+> for LUKS2 disk unlock. The touch-only (no clientPin) enrolment is a single-factor *possession*
 > control. Adding a clientPin PIN would make it true MFA (possession + knowledge).
 
 ### Biometric metrics
