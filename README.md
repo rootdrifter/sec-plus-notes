@@ -7,7 +7,7 @@ and the [spectre] penetration test — so the theory is anchored to systems actu
 tested rather than memorised in the abstract.
 
 These notes double as portfolio evidence of foundational knowledge for SOC / analyst targeting:
-they show not just that the concepts are known, but that they map onto things this candidate has
+they show not just that the concepts are known, but that they map onto systems this candidate has
 deployed and operated.
 
 ## SY0-701 domains — primary structure (current exam)
